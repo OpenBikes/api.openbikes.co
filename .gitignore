@@ -1,0 +1,8 @@
+keys.py
+*.pyc
+*.zip
+ngrok
+*.geojson
+*.db
+*.log
+config.py
