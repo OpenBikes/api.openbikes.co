@@ -30,8 +30,8 @@ formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(filename)s:%(li
 
 # Add a handler to write log messages to a file
 file_handler = logging.handlers.RotatingFileHandler(app.config['LOG_FILENAME'],
-						    app.config['LOG_MAXBYTES'],
-						    app.config['LOG_BACKUPS'])
+                            app.config['LOG_MAXBYTES'],
+                            app.config['LOG_BACKUPS'])
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(formatter)
 app.logger.addHandler(file_handler)

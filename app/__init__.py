@@ -26,7 +26,7 @@ babel = Babel(app)
 
 # Import the views
 from app.views import (
-	api
+    api
 )
 app.register_blueprint(api.apibp)
 

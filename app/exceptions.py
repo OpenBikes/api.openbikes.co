@@ -3,20 +3,20 @@ class CityNotFound(Exception):
 
 
 class CityInactive(Exception):
-	pass
+    pass
 
 
 class CityUnpredicable(Exception):
-	pass
+    pass
 
 
 class StationNotFound(Exception):
-	pass
+    pass
 
 
 class PastTimestamp(Exception):
-	pass
+    pass
 
 
 class InvalidKind(Exception):
-	pass
+    pass

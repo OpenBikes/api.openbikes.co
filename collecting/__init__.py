@@ -2,5 +2,5 @@ from collecting.providers import *
 
 
 def collect(provider, city):
-	stations = eval(provider).stations(city)
-	return stations
+    stations = eval(provider).stations(city)
+    return stations
