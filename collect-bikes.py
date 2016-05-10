@@ -19,15 +19,15 @@ def json_to_geojson(json):
                 'type': 'Feature',
                 'geometry': {
                     'type': 'Point',
-                    'coordinates': [entry['lon'], entry['lat']]
+                    'coordinates': [entry['longitude'], entry['latitude']]
                 },
                 'properties': entry,
             } for entry in json]
     }
     # Remove the duplicated latitude and longitude
     for feature in geojson['features']:
-        del feature['properties']['lat']
-        del feature['properties']['lon']
+        del feature['properties']['latitude']
+        del feature['properties']['longitude']
     return geojson
 
 
