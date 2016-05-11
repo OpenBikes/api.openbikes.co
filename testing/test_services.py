@@ -209,9 +209,9 @@ def test_srv_filter_stations_invalid_mode_value():
 
 
 @raises(PastTimestamp)
-def test_srv_filter_stations_invalid_timestamp_value():
-    past = (dt.datetime.now() - dt.timedelta(minutes=1)).timestamp()
+def test_srv_filter_stations_past_timestamp():
     ''' Check filter_stations service raises exception on invalid mode value. '''
+    past = (dt.datetime.now() - dt.timedelta(minutes=1)).timestamp()
     srv.filter_stations('Toulouse', 43.6, 1.4333, 1, kind='bikes', mode='walking',
                         timestamp=past, quantity=1, confidence=0.5)
 

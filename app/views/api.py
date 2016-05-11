@@ -138,7 +138,7 @@ def api_filter():
     args = request.args
     for arg in args:
         if arg not in ('city', 'latitude', 'longitude', 'limit', 'kind',
-                       'mode', 'timestamp', 'quantity', 'confidence'):
+                       'mode', 'timestamp', 'quantity'):
             return jsonify({
                 'status': 'failure',
                 'message': "'{}' is not a valid parameter".format(arg)
@@ -153,7 +153,7 @@ def api_filter():
             mode=args.get('mode'),
             timestamp=float(args['timestamp']) if args.get('timestamp') else None,
             quantity=int(args['quantity']) if args.get('quantity') else None,
-            confidence=float(args['confidence']) if args.get('confidence') else None,
+            confidence=0.95,
         )
         return jsonify({
             'status': 'success',

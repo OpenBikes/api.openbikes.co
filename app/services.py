@@ -20,7 +20,7 @@ from collecting import google
 
 def geojson(city):
     '''
-    Open and return the latest geojson file of a city as a dictionary. 
+    Open and return the latest geojson file of a city as a dictionary.
 
     Args:
         city (str): The city name.
@@ -241,11 +241,15 @@ def filter_stations(city, lat, lon, limit, kind=None, mode=None,
         List(dict): The stations, ordered by distance but not by confidence.
 
     Raises:
+        PastTimestamp: The provided timestamp is in the past.
         ValueError: The first 4 arguments cannot be None. The limit has to be a
             positive integer. The mode has to be either driving, walking,
             bicycling or transit.
         CityNotFound: The city cannot be found.
     '''
+    # Verify the timestamp is not in the past
+    if timestamp is not None and timestamp < dt.datetime.now().timestamp():
+        raise PastTimestamp("'{}' is in the past".format(timestamp))
     # Verify necessary arguments are not None
     for arg in (city, lat, lon, limit):
         if arg is None:
@@ -277,7 +281,9 @@ def filter_stations(city, lat, lon, limit, kind=None, mode=None,
             distances = google.distances(origin, destinations, mode, timestamp)
             # Forecast the number of bikes/spaces
             for station, distance in zip(destinations, distances):
-                forecasted = forecast(city, station['name'], kind, timestamp)
+                # Estimated time of arrival
+                eta = timestamp + distance
+                forecasted = forecast(city, station['name'], kind, eta)
                 # Check if the worst case scenario is acceptable
                 worst_case = forecasted['quantity'] - norm.ppf(confidence) * forecasted['error']
                 if worst_case >= quantity:

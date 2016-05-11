@@ -193,8 +193,7 @@ def test_api_filter_without_prediction():
 def test_api_filter_with_prediction():
     ''' Check api_filter works with predictions. '''
     query = 'city=Toulouse&latitude=43.6&longitude=1.4333&limit=1' + \
-            '&kind=bikes&mode=walking&confidence=0.5&quantity=1' + \
-            '&timestamp={timestamp}'.format(
+            '&kind=bikes&mode=walking&quantity=1&timestamp={timestamp}'.format(
                 timestamp=(dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
             )
     rv = client.get('/api/filter', query_string=query)
@@ -211,8 +210,7 @@ def test_api_filter_invalid_city():
 def test_api_filter_invalid_timestamp():
     ''' Check api_filter handles invalid timestamp. '''
     query = 'city=Toulouse&latitude=43.6&longitude=1.4333&limit=1' + \
-            '&kind=bikes&mode=walking&confidence=0.5&quantity=1' + \
-            '&timestamp={timestamp}'.format(
+            '&kind=bikes&mode=walking&quantity=1&timestamp={timestamp}'.format(
                 timestamp=(dt.datetime.now() - dt.timedelta(minutes=1)).timestamp()
             )
     rv = client.get('/api/filter', query_string=query)
