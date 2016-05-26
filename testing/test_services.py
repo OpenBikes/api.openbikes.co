@@ -273,3 +273,9 @@ def test_srv_filter_stations_prediction():
                                    mode='walking', timestamp=future, quantity=1,
                                    confidence=0.5,)
     assert len(stations) == 1
+
+
+def test_srv_find_closest_city():
+    ''' Check find_closest_city service works. '''
+    city = srv.find_closest_city(43.6, 1.4333)
+    assert city['name'] == 'Toulouse'

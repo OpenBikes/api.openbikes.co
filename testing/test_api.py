@@ -203,41 +203,50 @@ def test_api_forecast_spaces():
     assert rv.status_code == 200
 
 
-def test_api_filter_invalid_parameter():
-    ''' Check api_filter doesn't accept invalid parameters. '''
-    rv = client.get('/api/filter_stations', query_string='foo=bar')
+def test_api_filtered_invalid_parameter():
+    ''' Check api_filtered_stations doesn't accept invalid parameters. '''
+    rv = client.get('/api/filtered_stations', query_string='foo=bar')
     assert rv.status_code == 400
 
 
-def test_api_filter_without_prediction():
-    ''' Check api_filter works without predictions. '''
+def test_api_filtered_without_prediction():
+    ''' Check api_filtered_stations works without predictions. '''
     query = 'city=Toulouse&latitude=43.6&longitude=1.4333&limit=1'
-    rv = client.get('/api/filter_stations', query_string=query)
+    rv = client.get('/api/filtered_stations', query_string=query)
     assert rv.status_code == 200
 
 
-def test_api_filter_with_prediction():
-    ''' Check api_filter works with predictions. '''
+def test_api_filtered_with_prediction():
+    ''' Check api_filtered_stations works with predictions. '''
     query = 'city=Toulouse&latitude=43.6&longitude=1.4333&limit=1' + \
             '&kind=bikes&mode=walking&quantity=1&timestamp={timestamp}'.format(
                 timestamp=(dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
             )
-    rv = client.get('/api/filter_stations', query_string=query)
+    rv = client.get('/api/filtered_stations', query_string=query)
     assert rv.status_code == 200
 
 
-def test_api_filter_invalid_city():
-    ''' Check api_filter handles invalid city names. '''
+def test_api_filtered_invalid_city():
+    ''' Check api_filtered_stations handles invalid city names. '''
     query = 'city=xyz&latitude=43.6&longitude=1.4333&limit=1'
-    rv = client.get('/api/filter_stations', query_string=query)
+    rv = client.get('/api/filtered_stations', query_string=query)
     assert rv.status_code == 404
 
 
-def test_api_filter_invalid_timestamp():
-    ''' Check api_filter handles invalid timestamp. '''
+def test_api_filtered_invalid_timestamp():
+    ''' Check api_filtered_stations handles invalid timestamp. '''
     query = 'city=Toulouse&latitude=43.6&longitude=1.4333&limit=1' + \
             '&kind=bikes&mode=walking&quantity=1&timestamp={timestamp}'.format(
                 timestamp=(dt.datetime.now() - dt.timedelta(minutes=1)).timestamp()
             )
     rv = client.get('/api/filter_stations', query_string=query)
     assert rv.status_code == 404
+
+
+def test_api_closest_city():
+    ''' Check api_closest_city works. '''
+    rv = client.get('/api/closest_city/{latitude}/{longitude}'.format(
+        latitude='43.6',
+        longitude='1.4333'
+    ))
+    assert rv.status_code == 200

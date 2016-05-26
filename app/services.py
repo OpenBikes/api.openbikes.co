@@ -64,13 +64,11 @@ def get_countries(name=None, provider=None, as_query=False):
     if provider:
         query = query.filter_by(provider=provider)
 
-    if as_query is False:
-        # Run the query
-        countries = query.all()
-        # Return each country as a dictionary
-        return (country._asdict() for country in countries)
-    else:
+    if as_query:
         return query
+    else:
+        countries = query.all()
+        return (country._asdict() for country in countries)
 
 
 def get_providers(name=None, country=None, as_query=False):
@@ -98,13 +96,11 @@ def get_providers(name=None, country=None, as_query=False):
     if country:
         query = query.filter_by(country=country)
 
-    if as_query is False:
-        # Run the query
-        providers = query.all()
-        # Return each provider as a dictionary
-        return (provider._asdict() for provider in providers)
-    else:
+    if as_query:
         return query
+    else:
+        providers = query.all()
+        return (provider._asdict() for provider in providers)
 
 
 def get_cities(name=None, country=None, provider=None, predictable=None, active=None, as_query=False):
@@ -153,14 +149,11 @@ def get_cities(name=None, country=None, provider=None, predictable=None, active=
     if provider:
         query = query.filter_by(provider=provider)
 
-    if as_query is False:
-        # Run the query
-        cities = query.all()
-        # Return each city as a dictionary
-        return (city._asdict() for city in cities)
-    else:
+    if as_query:
         return query
-
+    else:
+        cities = query.all()
+        return (city._asdict() for city in cities)
 
 def get_stations(name=None, city=None, as_query=False):
     '''
@@ -190,13 +183,11 @@ def get_stations(name=None, city=None, as_query=False):
     if city:
         query = query.join(models.City).filter(models.City.name == city)
 
-    if as_query is False:
-        # Run the query
-        stations = query.all()
-        # Return each station as a dictionary
-        return (station._asdict() for station in stations)
-    else:
+    if as_query:
         return query
+    else:
+        stations = query.all()
+        return (station._asdict() for station in stations)
 
 
 def get_updates(city=None):
@@ -357,9 +348,9 @@ def filter_stations(city, lat, lon, limit, kind=None, mode=None,
         raise ValueError("'confidence' should be a number between 0 and 1")
 
     # Query all the stations in the given city
-    center = 'POINT({lat} {lon})'.format(lat=lat, lon=lon)
+    point = 'POINT({lat} {lon})'.format(lat=lat, lon=lon)
     query = get_stations(city=city, as_query=True)
-    query = query.order_by(models.Station.position.distance_box(center))
+    query = query.order_by(models.Station.position.distance_box(point))
     if query.count() == 0:
         raise CityNotFound("'{}' not found".format(city))
 
@@ -368,7 +359,7 @@ def filter_stations(city, lat, lon, limit, kind=None, mode=None,
     if kind and mode and timestamp and quantity and confidence:
         origin = {'latitude': lat, 'longitude': lon}
         # Go through the stations in chunks
-        chunk = query.paginate(per_page=10)
+        chunk = query.paginate(per_page=5)
         while len(candidates) < limit and chunk.has_next is True:
             destinations = [station._asdict() for station in chunk.items]
             distances = google.distances(origin, destinations, mode, timestamp)
@@ -391,3 +382,32 @@ def filter_stations(city, lat, lon, limit, kind=None, mode=None,
         candidates = [station._asdict() for station in query.limit(limit)]
     # Return each station as a dictionary
     return candidates
+
+
+def find_closest_city(lat, lon, as_object=False):
+    '''
+    Find the closest point to a given latitude and longitude.
+
+    Args:
+        lat (float): The latitude of the center point.
+        lon (float): The longitude of the center point.
+        as_object (boolean): Return the city as a models.City object, if not a dict.
+
+    Returns:
+        dict or query: The closest city.
+    '''
+    point = 'POINT({lat} {lon})'.format(lat=lat, lon=lon)
+    query = models.City.query.with_entities(
+        models.City.name,
+        models.City.latitude,
+        models.City.longitude,
+        models.City.predictable,
+        models.City.active,
+        models.City.country,
+        models.City.provider
+    )
+    city = query.order_by(models.City.position.distance_box(point)).first()
+    if as_object:
+        return city
+    else:
+        return city._asdict()

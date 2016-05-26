@@ -160,8 +160,8 @@ def api_forecast(city, station, kind, timestamp):
         return jsonify(error(exc)), 404
 
 
-@API_BP.route('/filter_stations', methods=['GET'])
-def api_filter_stations():
+@API_BP.route('/filtered_stations', methods=['GET'])
+def api_filtered_stations():
     ''' Return filtered stations. '''
     error = lambda e: {
         'status': 'failure',
@@ -195,3 +195,11 @@ def api_filter_stations():
     except (PastTimestamp, InvalidKind, CityNotFound, CityInactive,
             CityUnpredicable, ValueError) as exc:
         return jsonify(error(exc)), 404
+
+
+@API_BP.route('/closest_city/<float:latitude>/<float:longitude>', methods=['GET'])
+def api_closest_city(latitude, longitude):
+    ''' Return the closest city for a given latitude and longitude. '''
+    response = srv.find_closest_city(latitude, longitude)
+    response['status'] = 'success'
+    return jsonify(response), 200
