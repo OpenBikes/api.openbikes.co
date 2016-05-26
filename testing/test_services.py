@@ -25,93 +25,135 @@ def test_srv_geojson_city_not_found():
 def test_srv_geojson_success():
     ''' Check geojson service works with a valid city. '''
     geojson = srv.geojson('Toulouse')
-    assert type(geojson) == dict
+    assert isinstance(geojson, dict)
 
 
-def test_srv_cities_nil():
-    ''' Check cities service returns nothing with an invalid name. '''
-    cities = srv.cities(name='xyz')
+def test_srv_get_countries_nil():
+    ''' Check get_countries service returns nothing with an invalid name. '''
+    countries = srv.get_countries(name='xyz')
+    assert isinstance(countries, types.GeneratorType)
+    assert len(list(countries)) == 0
+
+
+def test_srv_get_countries_all_params():
+    ''' Check get_countries service works will all parameters. '''
+    countries = srv.get_countries(name='France', provider='jcdecaux')
+    assert isinstance(countries, types.GeneratorType)
+    assert len(list(countries)) == 1
+
+
+def test_srv_get_providers_nil():
+    ''' Check get_providers service returns nothing with an invalid name. '''
+    providers = srv.get_providers(name='xyz')
+    assert isinstance(providers, types.GeneratorType)
+    assert len(list(providers)) == 0
+
+
+def test_srv_get_providers_all_params():
+    ''' Check get_providers service works will all parameters. '''
+    providers = srv.get_providers(name='jcdecaux', country='France')
+    assert isinstance(providers, types.GeneratorType)
+    assert len(list(providers)) == 1
+
+
+def test_srv_get_cities_nil():
+    ''' Check get_cities service returns nothing with an invalid name. '''
+    cities = srv.get_cities(name='xyz')
     assert isinstance(cities, types.GeneratorType)
     assert len(list(cities)) == 0
 
 
-def test_srv_cities_all_params():
-    ''' Check cities service works will all parameters. '''
-    cities = srv.cities(name='Toulouse', country='France', provider='jcdecaux',
-                        predictable=True, active=True)
-    print(cities, type(cities))
+def test_srv_get_cities_all_params():
+    ''' Check get_cities service works will all parameters. '''
+    cities = srv.get_cities(name='Toulouse', country='France', provider='jcdecaux',
+                            predictable=True, active=True)
     assert isinstance(cities, types.GeneratorType)
     assert len(list(cities)) == 1
 
 
-def test_srv_stations_nil():
-    ''' Check stations service returns nothing with an invalid name. '''
-    stations = srv.stations(name='xyz')
+def test_srv_get_cities_nil():
+    ''' Check get_cities service returns nothing with an invalid name. '''
+    cities = srv.get_cities(name='xyz')
+    assert isinstance(cities, types.GeneratorType)
+    assert len(list(cities)) == 0
+
+
+def test_srv_get_cities_all_params():
+    ''' Check get_ities service works will all parameters. '''
+    cities = srv.get_cities(name='Toulouse', country='France', provider='jcdecaux',
+                            predictable=True, active=True)
+    assert isinstance(cities, types.GeneratorType)
+    assert len(list(cities)) == 1
+
+
+def test_srv_get_stations_nil():
+    ''' Check get_stations service returns nothing with an invalid name. '''
+    stations = srv.get_stations(name='xyz')
     assert isinstance(stations, types.GeneratorType)
     assert len(list(stations)) == 0
 
 
-def test_srv_stations_all_params():
-    ''' Check stations service works will all parameters. '''
-    stations = srv.stations(name='00003 - POMME', city='Toulouse')
+def test_srv_get_stations_all_params():
+    ''' Check get_stations service works will all parameters. '''
+    stations = srv.get_stations(name='00003 - POMME', city='Toulouse')
     assert isinstance(stations, types.GeneratorType)
     assert len(list(stations)) == 1
 
 
 @raises(CityNotFound)
-def test_srv_updates_city_not_found():
-    ''' Check updates service raises exception with an invalid city. '''
-    srv.updates(city='xyz')
+def test_srv_get_updates_city_not_found():
+    ''' Check get_updates service raises exception with an invalid city. '''
+    srv.get_updates(city='xyz')
 
 
 def test_srv_updates_one_city():
-    ''' Check updates service works for one city. '''
-    updates = srv.updates(city='Toulouse')
+    ''' Check get_updates service works for one city. '''
+    updates = srv.get_updates(city='Toulouse')
     assert isinstance(updates, types.GeneratorType)
     assert len(list(updates)) == 1
 
 
-def test_srv_updates_all_cities():
-    ''' Check updates service works for all cities. '''
-    updates = srv.updates(city=None)
+def test_srv_get_updates_all_cities():
+    ''' Check get_updates service works for all cities. '''
+    updates = srv.get_updates(city=None)
     assert isinstance(updates, types.GeneratorType)
     assert len(list(updates)) >= 1
 
 
 @raises(PastTimestamp)
-def test_srv_forecast_past_timestamp():
-    ''' Check forecast service raises exception on past timestamp. '''
+def test_srv_make_forecast_past_timestamp():
+    ''' Check make_forecast service raises exception on past timestamp. '''
     past = (dt.datetime.now() - dt.timedelta(minutes=1)).timestamp()
-    srv.forecast(city='Toulouse', station='00003 - POMME', kind='bikes',
-                 timestamp=past)
+    srv.make_forecast(city='Toulouse', station='00003 - POMME', kind='bikes',
+                      timestamp=past)
 
 
 @raises(InvalidKind)
-def test_srv_forecast_invalid_kind():
-    ''' Check forecast service raises exception on invalid kind. '''
+def test_srv_make_forecast_invalid_kind():
+    ''' Check make_forecast service raises exception on invalid kind. '''
     future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    srv.forecast(city='Toulouse', station='00003 - POMME', kind='xyz',
-                 timestamp=future)
+    srv.make_forecast(city='Toulouse', station='00003 - POMME', kind='xyz',
+                      timestamp=future)
 
 
 @raises(CityNotFound)
-def test_srv_forecast_city_not_found():
-    ''' Check forecast service raises exception on invalid city. '''
+def test_srv_make_forecast_city_not_found():
+    ''' Check make_forecast service raises exception on invalid city. '''
     future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    srv.forecast(city='xyz', station='00003 - POMME', kind='bikes',
-                 timestamp=future)
+    srv.make_forecast(city='xyz', station='00003 - POMME', kind='bikes',
+                      timestamp=future)
 
 
 @raises(StationNotFound)
-def test_srv_forecast_station_not_found():
-    ''' Check forecast service raises exception on invalid station. '''
+def test_srv_make_forecast_station_not_found():
+    ''' Check make_forecast service raises exception on invalid station. '''
     future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    srv.forecast(city='Toulouse', station='xyz', kind='bikes',
-                 timestamp=future)
+    srv.make_forecast(city='Toulouse', station='xyz', kind='bikes',
+                      timestamp=future)
 
 
-def test_srv_forecast_city_inactive():
-    ''' Check forecast service raises exception on inactive city. '''
+def test_srv_make_forecast_city_inactive():
+    ''' Check make_forecast service raises exception on inactive city. '''
     # Setup
     city = models.City.query.filter_by(name='Toulouse').first()
     city.active = False
@@ -120,16 +162,16 @@ def test_srv_forecast_city_inactive():
     @raises(CityInactive)
     def test():
         future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-        srv.forecast(city='Toulouse', station='00003 - POMME', kind='bikes',
-                     timestamp=future)
+        srv.make_forecast(city='Toulouse', station='00003 - POMME', kind='bikes',
+                          timestamp=future)
     # Tear down
     city = models.City.query.filter_by(name='Toulouse').first()
     city.active = True
     session.commit()
 
 
-def test_srv_forecast_city_unpredictable():
-    ''' Check forecast service raises exception on unpredictable city. '''
+def test_srv_make_forecast_city_unpredictable():
+    ''' Check make_forecast service raises exception on unpredictable city. '''
     # Setup
     city = models.City.query.filter_by(name='Toulouse').first()
     city.predictable = False
@@ -138,28 +180,28 @@ def test_srv_forecast_city_unpredictable():
     @raises(CityUnpredicable)
     def test():
         future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-        srv.forecast(city='Toulouse', station='00003 - POMME', kind='bikes',
-                     timestamp=future)
+        srv.make_forecast(city='Toulouse', station='00003 - POMME', kind='bikes',
+                          timestamp=future)
     # Tear down
     city = models.City.query.filter_by(name='Toulouse').first()
     city.predictable = True
     session.commit()
 
 
-def test_srv_forecast_bikes():
-    ''' Check forecast service works for forecasting bikes. '''
+def test_srv_make_forecast_bikes():
+    ''' Check make_forecast service works for forecasting bikes. '''
     future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    forecast = srv.forecast(city='Toulouse', station='00003 - POMME',
-                            kind='bikes', timestamp=future)
+    forecast = srv.make_forecast(city='Toulouse', station='00003 - POMME',
+                                 kind='bikes', timestamp=future)
     assert type(forecast) == dict
     assert len(forecast.keys()) > 0
 
 
 def test_srv_forecast_spaces():
-    ''' Check forecast service works for forecasting spaces. '''
+    ''' Check make_forecast service works for forecasting spaces. '''
     future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    forecast = srv.forecast(city='Toulouse', station='00003 - POMME',
-                            kind='spaces', timestamp=future)
+    forecast = srv.make_forecast(city='Toulouse', station='00003 - POMME',
+                                 kind='spaces', timestamp=future)
     assert type(forecast) == dict
     assert len(forecast.keys()) > 0
 

@@ -28,7 +28,7 @@ babel = Babel(app)
 from app.views import (
     api
 )
-app.register_blueprint(api.apibp)
+app.register_blueprint(api.API_BP)
 
 # Setup the logger
 from app import logger

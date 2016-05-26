@@ -11,24 +11,68 @@ from app.exceptions import (
 )
 
 
-apibp = Blueprint('apibp', __name__, url_prefix='/api')
+API_BP = Blueprint('apibp', __name__, url_prefix='/api')
 
 
-@apibp.route('/geojson/<string:city>', methods=['GET'])
+@API_BP.route('/geojson/<string:city>', methods=['GET'])
 def api_geojson(city):
     ''' Return the latest geojson file of a city. '''
     try:
         response = srv.geojson(city)
         response['status'] = 'success'
         return jsonify(response), 200
-    except CityNotFound as e:
+    except CityNotFound as exc:
         return jsonify({
             'status': 'failure',
-            'message': str(e)
+            'message': str(exc)
         }), 404
 
 
-@apibp.route('/cities', methods=['GET'])
+@API_BP.route('/countries', methods=['GET'])
+def api_countries():
+    ''' Return the list of countries. '''
+    args = request.args
+    # Check arguments are valid
+    for arg in args:
+        if arg not in ('name', 'provider'):
+            return jsonify({
+                'status': 'failure',
+                'message': "'{}' is not a valid parameter".format(arg)
+            }), 400
+    countries = list(srv.get_countries(
+        name=args.get('name'),
+        provider=args.get('provider')
+    ))
+    return jsonify({
+        'status': 'success',
+        'countries': countries,
+        'count': len(countries)
+    }), 200
+
+
+@API_BP.route('/providers', methods=['GET'])
+def api_providers():
+    ''' Return the list of providers. '''
+    args = request.args
+    # Check arguments are valid
+    for arg in args:
+        if arg not in ('name', 'country'):
+            return jsonify({
+                'status': 'failure',
+                'message': "'{}' is not a valid parameter".format(arg)
+            }), 400
+    providers = list(srv.get_providers(
+        name=args.get('name'),
+        country=args.get('country')
+    ))
+    return jsonify({
+        'status': 'success',
+        'countries': providers,
+        'count': len(providers)
+    }), 200
+
+
+@API_BP.route('/cities', methods=['GET'])
 def api_cities():
     ''' Return the list of cities. '''
     args = request.args
@@ -39,7 +83,7 @@ def api_cities():
                 'status': 'failure',
                 'message': "'{}' is not a valid parameter".format(arg)
             }), 400
-    cities = list(srv.cities(
+    cities = list(srv.get_cities(
         name=args.get('name'),
         country=args.get('country'),
         provider=args.get('provider'),
@@ -53,7 +97,7 @@ def api_cities():
     }), 200
 
 
-@apibp.route('/stations', methods=['GET'])
+@API_BP.route('/stations', methods=['GET'])
 def api_stations():
     ''' Return the list of stations. '''
     args = request.args
@@ -64,7 +108,7 @@ def api_stations():
                 'status': 'failure',
                 'message': "'{}' is not a valid parameter".format(arg)
             }), 400
-    stations = list(srv.stations(
+    stations = list(srv.get_stations(
         name=args.get('name'),
         city=args.get('city')
     ))
@@ -75,32 +119,32 @@ def api_stations():
     }), 200
 
 
-@apibp.route('/updates', methods=['GET'])
+@API_BP.route('/updates', methods=['GET'])
 def api_updates():
     ''' Return the list of latest updates for each city. '''
     args = request.args
     # Check arguments are valid
     for arg in args:
-        if arg not in ('city'):
+        if arg not in 'city':
             return jsonify({
                 'status': 'failure',
                 'message': "'{}' is not a valid parameter".format(arg)
             }), 400
     try:
-        updates = list(srv.updates(args.get('city')))
+        updates = list(srv.get_updates(args.get('city')))
         return jsonify({
             'status': 'success',
             'updates': updates,
             'count': len(updates)
         })
-    except CityNotFound as e:
+    except CityNotFound as exc:
         return jsonify({
             'status': 'failure',
-            'message': str(e)
+            'message': str(exc)
         }), 404
 
 
-@apibp.route('/forecast/<string:city>/<string:station>/<string:kind>/<float:timestamp>', methods=['GET'])
+@API_BP.route('/forecast/<string:city>/<string:station>/<string:kind>/<float:timestamp>', methods=['GET'])
 def api_forecast(city, station, kind, timestamp):
     ''' Return a forecast for a station at a given time. '''
     error = lambda e: {
@@ -108,27 +152,16 @@ def api_forecast(city, station, kind, timestamp):
         'message': str(e)
     }
     try:
-        response = srv.forecast(city, station, kind, timestamp)
+        response = srv.make_forecast(city, station, kind, timestamp)
         response['status'] = 'success'
         return jsonify(response), 200
-    except PastTimestamp as e:
-        return jsonify(error(e)), 404
-    except InvalidKind as e:
-        return jsonify(error(e)), 404
-    except CityNotFound as e:
-        return jsonify(error(e)), 404
-    except StationNotFound as e:
-        return jsonify(error(e)), 404
-    except CityInactive as e:
-        return jsonify(error(e)), 404
-    except CityUnpredicable as e:
-        return jsonify(error(e)), 404
-    except Exception as e:
-        return jsonify(error('Unknown error, please notify us')), 500
+    except (PastTimestamp, InvalidKind, CityNotFound, StationNotFound,
+            CityInactive, CityUnpredicable) as exc:
+        return jsonify(error(exc)), 404
 
 
-@apibp.route('/filter', methods=['GET'])
-def api_filter():
+@API_BP.route('/filter_stations', methods=['GET'])
+def api_filter_stations():
     ''' Return filtered stations. '''
     error = lambda e: {
         'status': 'failure',
@@ -159,18 +192,6 @@ def api_filter():
             'status': 'success',
             'stations': stations
         })
-    except PastTimestamp as e:
-        return jsonify(error(e)), 404
-    except InvalidKind as e:
-        return jsonify(error(e)), 404
-    except CityNotFound as e:
-        return jsonify(error(e)), 404
-    except CityInactive as e:
-        return jsonify(error(e)), 404
-    except CityUnpredicable as e:
-        return jsonify(error(e)), 404
-    except ValueError as e:
-        return jsonify(error(e)), 404
-    except Exception as e:
-        return jsonify(error(e)), 500
-
+    except (PastTimestamp, InvalidKind, CityNotFound, CityInactive,
+            CityUnpredicable, ValueError) as exc:
+        return jsonify(error(exc)), 404

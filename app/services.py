@@ -39,9 +39,77 @@ def geojson(city):
         raise CityNotFound("'{}' not found".format(city))
 
 
-def cities(name=None, country=None, provider=None, predictable=None, active=None, as_query=False):
+def get_countries(name=None, provider=None, as_query=False):
     '''
-    Filter and return a dictionary of cities.
+    Filter and return a dictionary or query of countries.
+
+    Args:
+        name (str): A country name.
+        provider (str): A data provider name.
+
+    Returns:
+        generator(dict) or query: The countries.
+    '''
+    # Restrict the returned fields
+    query = models.City.query.with_entities(
+        models.City.country,
+        models.City.provider
+    )
+
+    # Filter on the country name
+    if name:
+        query = query.filter_by(country=name)
+
+    # Filter on the data provider
+    if provider:
+        query = query.filter_by(provider=provider)
+
+    if as_query is False:
+        # Run the query
+        countries = query.all()
+        # Return each country as a dictionary
+        return (country._asdict() for country in countries)
+    else:
+        return query
+
+
+def get_providers(name=None, country=None, as_query=False):
+    '''
+    Filter and return a dictionary or query of providers.
+
+    Args:
+        name (str): A provider name.
+        country (str): A country name.
+
+    Returns:
+        generator(dict) or query: The providers.
+    '''
+    # Restrict the returned fields
+    query = models.City.query.with_entities(
+        models.City.provider,
+        models.City.country
+    )
+
+    # Filter on the provider name
+    if name:
+        query = query.filter_by(provider=name)
+
+    # Filter on the country name
+    if country:
+        query = query.filter_by(country=country)
+
+    if as_query is False:
+        # Run the query
+        providers = query.all()
+        # Return each provider as a dictionary
+        return (provider._asdict() for provider in providers)
+    else:
+        return query
+
+
+def get_cities(name=None, country=None, provider=None, predictable=None, active=None, as_query=False):
+    '''
+    Filter and return a dictionary or query of cities.
 
     Args:
         name (str): A city name.
@@ -64,21 +132,27 @@ def cities(name=None, country=None, provider=None, predictable=None, active=None
         models.City.country,
         models.City.provider
     )
-    # Filter on name
+
+    # Filter on the city name
     if name:
         query = query.filter_by(name=name)
+
     # Filter if predictions are available or not
     if predictable:
         query = query.filter_by(predictable=predictable)
+
     # Filter if the city is active or not
     if active:
         query = query.filter_by(active=active)
+
     # Filter on the belonging country
     if country:
         query = query.filter_by(country=country)
+
     # Filter on the data provider
     if provider:
         query = query.filter_by(provider=provider)
+
     if as_query is False:
         # Run the query
         cities = query.all()
@@ -88,9 +162,9 @@ def cities(name=None, country=None, provider=None, predictable=None, active=None
         return query
 
 
-def stations(name=None, city=None, as_query=False):
+def get_stations(name=None, city=None, as_query=False):
     '''
-    Filter and return a dictionary of stations.
+    Filter and return a dictionary or query of stations.
 
     Args:
         name (str): A station name.
@@ -107,12 +181,15 @@ def stations(name=None, city=None, as_query=False):
         models.Station.longitude,
         models.Station.altitude
     )
+
     # Filter on the station name
     if name:
         query = query.filter_by(name=name)
+
     # Filter on the belonging city
     if city:
-        query = query.join(models.City).filter(models.City.name==city)
+        query = query.join(models.City).filter(models.City.name == city)
+
     if as_query is False:
         # Run the query
         stations = query.all()
@@ -122,7 +199,7 @@ def stations(name=None, city=None, as_query=False):
         return query
 
 
-def updates(city=None):
+def get_updates(city=None):
     '''
     Return the latest update time for one or more cities.
 
@@ -136,6 +213,7 @@ def updates(city=None):
         CityNotFound: The city cannot be found.
     '''
     token = '*' if city is None else city
+
     # Get the information on all the geojson files
     geojson_files = glob.glob('{0}/{1}.geojson'.format(
         app.config['GEOJSON_FOLDER'],
@@ -143,20 +221,21 @@ def updates(city=None):
     ))
     if len(geojson_files) == 0:
         raise CityNotFound("'{}' not found".format(city))
+
     # Get the edit time of each geojson file
-    updates = (
+    results = (
         {
             'city': geojson.split('/')[-1].split('.')[0],
             'update': os.path.getmtime(geojson)
         }
         for geojson in geojson_files
     )
-    return updates
+    return results
 
 
-def forecast(city, station, kind, timestamp):
+def make_forecast(city, station, kind, timestamp):
     '''
-    Forecast the number of bikes/spaces for a station at a certain time. 
+    Forecast the number of bikes/spaces for a station at a certain time.
 
     Args:
         city (str): The name of the city the station belongs to.
@@ -178,25 +257,32 @@ def forecast(city, station, kind, timestamp):
     # Timestamp is in the past
     if timestamp < dt.datetime.now().timestamp():
         raise PastTimestamp("'{}' is in the past".format(timestamp))
+
     # Kind is invalid
     if kind not in ('bikes', 'spaces'):
         raise InvalidKind("'{}' is not a valid kind")
-    query = models.Station.query.join(models.City).filter(models.City.name==city)
+    query = models.Station.query.join(models.City).filter(models.City.name == city)
+
     # City doesn't exist
     if query.count() == 0:
         raise CityNotFound("'{}' not found".format(city))
-    query = query.filter(models.Station.name==station)
+    query = query.filter(models.Station.name == station)
+
     # Station doesn't exist
     if query.count() == 0:
         raise StationNotFound("'{}' not found".format(station))
+
     # Run the query
     station = query.first()
+
     # City not active
     if not station.city.active:
         raise CityInactive("'{}' is inactive".format(city))
+
     # City not predictable
     if not station.city.predictable:
         raise CityUnpredicable("'{}' is unpredictable".format(city))
+
     # Build a forecast
     moment = dt.datetime.fromtimestamp(timestamp)
     forecast = {
@@ -207,6 +293,7 @@ def forecast(city, station, kind, timestamp):
         'moment': moment.isoformat(),
         'error': station.training.error
     }
+
     # Make a prediction for the station
     if kind == 'bikes':
         forecast['quantity'] = station.predict('bikes', moment)
@@ -250,26 +337,32 @@ def filter_stations(city, lat, lon, limit, kind=None, mode=None,
     # Verify the timestamp is not in the past
     if timestamp is not None and timestamp < dt.datetime.now().timestamp():
         raise PastTimestamp("'{}' is in the past".format(timestamp))
+
     # Verify necessary arguments are not None
     for arg in (city, lat, lon, limit):
         if arg is None:
             raise ValueError("'{}' cannot be nil".format(arg))
+
     # Verify limit is not negative
-    if type(limit) != int or limit < 0:
+    if not isinstance(limit, int) or limit < 0:
         raise ValueError("'limit' has to be a non-negative integer")
+
     # Verify mode is valid
     if mode is not None and mode not in ('driving', 'walking', 'bicycling', 'transit'):
         raise ValueError("'mode' has to be either 'driving', 'walking'" + \
                          "'bicycling' or 'transit'")
+
     # Verify confidence is valid
     if confidence is not None and not 0 <= confidence <= 1:
         raise ValueError("'confidence' should be a number between 0 and 1")
+
     # Query all the stations in the given city
     center = 'POINT({lat} {lon})'.format(lat=lat, lon=lon)
-    query = stations(city=city, as_query=True)
+    query = get_stations(city=city, as_query=True)
     query = query.order_by(models.Station.position.distance_box(center))
     if query.count() == 0:
         raise CityNotFound("'{}' not found".format(city))
+
     # Filter by number of bikes/spaces and limit
     candidates = []
     if kind and mode and timestamp and quantity and confidence:
@@ -281,9 +374,9 @@ def filter_stations(city, lat, lon, limit, kind=None, mode=None,
             distances = google.distances(origin, destinations, mode, timestamp)
             # Forecast the number of bikes/spaces
             for station, distance in zip(destinations, distances):
-                # Estimated time of arrival
+                # Calculate estimated time of arrival
                 eta = timestamp + distance
-                forecasted = forecast(city, station['name'], kind, eta)
+                forecasted = make_forecast(city, station['name'], kind, eta)
                 # Check if the worst case scenario is acceptable
                 worst_case = forecasted['quantity'] - norm.ppf(confidence) * forecasted['error']
                 if worst_case >= quantity:
