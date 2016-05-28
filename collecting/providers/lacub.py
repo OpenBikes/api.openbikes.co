@@ -1,13 +1,12 @@
 import requests
 
 from collecting import util
-import variables
 
 
 def stations(city):
-    # The city parameter is necessary so that everything work 
+    # The city parameter is necessary so that everything work
     payload = {
-        'key': variables.LACUB_API_KEY,
+        'key': os.environ.get('LACUB_API_KEY'),
         'SERVICE': 'WFS',
         'VERSION': '1.1.0',
         'REQUEST': 'GetFeature',
@@ -30,8 +29,8 @@ def normalize(stations):
         'bikes': int(extract(station, 'nbbikes')),
         'stands': int(extract(station, 'nbemptydocks')),
         'update': util.epoch_to_datetime(int(extract(station,
-                                           'latestupdatetime')),
-                                       divisor=1000).isoformat()
+                                                     'latestupdatetime')),
+                                         divisor=1000).isoformat()
     }
     return [
         normalized(station)
