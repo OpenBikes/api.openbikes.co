@@ -1,8 +1,6 @@
 import json
 from urllib.request import urlopen
 
-import variables
-
 
 def chunkify(l, p):
     '''
@@ -23,7 +21,7 @@ def chunkify(l, p):
     '''
     if type(p) != int or p <= 0:
         raise ValueError("'p' should be a positive integer.")
-    return (l[i:i+p] for i in range(0, len(l), p))
+    return (l[i:i + p] for i in range(0, len(l), p))
 
 
 def unchunkify(l):
@@ -84,7 +82,7 @@ def altitudes(points, chunk_size=50):
     for loc in locations:
         url = base + 'locations={loc}&key={key}'.format(
             loc=loc,
-            key=variables.GOOGLE_ELEVATION_API_KEY
+            key=os.environ.get('GOOGLE_ELEVATION_API_KEY')
         )
         with urlopen(url) as response:
             data = json.loads(response.read().decode())
@@ -115,7 +113,8 @@ def distances(origin, destinations, mode, timestamp, chunk_size=20):
         List (float): The duration in seconds to go from the point of
             origin to each point in the provided destinations list.
     '''
-    origin = '{lat},{lon}'.format(lat=origin['latitude'], lon=origin['longitude'])
+    origin = '{lat},{lon}'.format(
+        lat=origin['latitude'], lon=origin['longitude'])
     # Chunkify the points to not hit the API threshold
     chunks = chunkify(destinations, chunk_size)
     # Concatenate each chunk into a query string
@@ -126,7 +125,7 @@ def distances(origin, destinations, mode, timestamp, chunk_size=20):
     for dest in destinations:
         url = base + 'mode={mode}&key={key}&origins={origin}&destinations={destinations}&time={time}'.format(
             mode=mode,
-            key=variables.GOOGLE_DISTANCE_MATRIX_API_KEY,
+            key=os.environ.get('GOOGLE_DISTANCE_MATRIX_API_KEY'),
             origin=origin,
             destinations=dest,
             time=timestamp

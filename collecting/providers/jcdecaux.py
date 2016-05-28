@@ -1,11 +1,9 @@
 import requests
-
-import variables
 from collecting import util
 
 
 def stations(city):
-    payload = {'contract': city, 'apiKey': variables.JCDECAUX_API_KEY}
+    payload = {'contract': city, 'apiKey': os.environ.get('JCDECAUX_API_KEY')}
     response = requests.get(
         'https://api.jcdecaux.com/vls/v1/stations',
         params=payload
@@ -24,7 +22,7 @@ def normalize(stations):
         'bikes': station['available_bikes'],
         'stands': station['available_bike_stands'],
         'update': util.epoch_to_datetime(station['last_update'],
-                                       divisor=1000).isoformat()
+                                         divisor=1000).isoformat()
     }
     return [
         normalized(station)

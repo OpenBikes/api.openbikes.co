@@ -1,4 +1,3 @@
-variables.py
 *.pyc
 *.zip
 ngrok
@@ -6,3 +5,4 @@ ngrok
 *.db
 *.log
 config.py
+.env
