@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 import datetime as dt
 
 from sklearn.tree import DecisionTreeRegressor
@@ -6,7 +5,7 @@ import numpy as np
 
 from app import app
 from app import models
-from app.database import db
+from app.database import session
 from mongo.timeseries import query
 from training import munging
 from training import util
@@ -83,10 +82,13 @@ def optimize(regressor, training):
             best['score'] = score
     # Select data backwards according to the grid search
     data = df.truncate(before=now - dt.timedelta(days=best['backward']), after=now)
-    X, Y = munging.split(dataframe=data, target='bikes')
-    regressor.fit(X, Y)
-    best['regressor'] = regressor
-    return best
+    try:
+        X, Y = munging.split(dataframe=data, target='bikes')
+        regressor.fit(X, Y)
+        best['regressor'] = regressor
+        return best
+    except ValueError:
+        return False
 
 
 def update(station):
@@ -101,7 +103,7 @@ def update(station):
     station.training.backward = best['backward']
     station.training.forward = forward
     station.training.error = best['score']
-    db.commit()
+    session.commit()
     # Save the regressor
     util.save_regressor(best['regressor'],
                         station.city.name,

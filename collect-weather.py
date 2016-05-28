@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 from joblib import Parallel, delayed
 
 from app import app

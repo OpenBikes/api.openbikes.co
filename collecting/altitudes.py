@@ -1,7 +1,7 @@
 import json
 from urllib.request import urlopen
 
-import keys
+import variables
 
 
 def add(stations, size=50):
@@ -29,7 +29,7 @@ def add(stations, size=50):
     if locations.endswith(';'):
         locations = locations[:-1]
     for loc in locations.split(';'):
-        url = base + 'locations={0}&key={1}'.format(loc[:-1], keys.GOOGLE_ELEVATION)
+        url = base + 'locations={0}&key={1}'.format(loc[:-1], variables.GOOGLE_ELEVATION_API_KEY)
         with urlopen(url) as response:
             data = json.loads(response.read().decode())
         packages.append(data['results'])

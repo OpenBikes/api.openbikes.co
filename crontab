@@ -1,0 +1,8 @@
+# Collect biking data every 2 minutes
+*/2 * * * * cd /var/www/api.openbikes.co && python3 collect-bikes.py
+
+# Collect weather data every 15 minutes
+*/20 * * * * cd /var/www/api.openbikes.co && python3 collect-weather.py
+
+# Train regressors every day at 3:30AM
+30 3 * * * cd /var/www/api.openbikes.co && python3 train-regressors.py

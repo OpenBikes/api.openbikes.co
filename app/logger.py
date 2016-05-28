@@ -19,6 +19,7 @@ They output to a file/shell if the event level is above their threshold.
 '''
 
 import logging
+from logging.handlers import RotatingFileHandler
 
 from app import app
 
@@ -29,9 +30,9 @@ app.logger.setLevel(app.config['LOG_LEVEL'])
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(filename)s:%(lineno)s :: %(message)s')
 
 # Add a handler to write log messages to a file
-file_handler = logging.handlers.RotatingFileHandler(app.config['LOG_FILENAME'],
-                            app.config['LOG_MAXBYTES'],
-                            app.config['LOG_BACKUPS'])
+file_handler = RotatingFileHandler(app.config['LOG_FILENAME'],
+                                   app.config['LOG_MAXBYTES'],
+                                   app.config['LOG_BACKUPS'])
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(formatter)
 app.logger.addHandler(file_handler)

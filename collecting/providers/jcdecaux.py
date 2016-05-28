@@ -1,11 +1,11 @@
 import requests
 
-import keys
+import variables
 from collecting import util
 
 
 def stations(city):
-    payload = {'contract': city, 'apiKey': keys.JCDECAUX}
+    payload = {'contract': city, 'apiKey': variables.JCDECAUX_API_KEY}
     response = requests.get(
         'https://api.jcdecaux.com/vls/v1/stations',
         params=payload

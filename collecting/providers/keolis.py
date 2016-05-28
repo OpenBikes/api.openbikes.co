@@ -2,12 +2,12 @@ import datetime as dt
 
 import requests
 
-import keys
+import variables
 
 
 def stations(city):
     # The city parameter is necessary so that everything works
-    payload = {'key': keys.KEOLIS, 'cmd': 'getstation'}
+    payload = {'key': variables.KEOLIS_API_KEY, 'cmd': 'getstation'}
     response = requests.get(
         'http://data.keolis-rennes.com/json/?version=1.0',
         params=payload

@@ -1,13 +1,13 @@
 import requests
 
 from collecting import util
-import keys
+import variables
 
 
 def stations(city):
     # The city parameter is necessary so that everything work 
     payload = {
-        'key': keys.LACUB,
+        'key': variables.LACUB_API_KEY,
         'SERVICE': 'WFS',
         'VERSION': '1.1.0',
         'REQUEST': 'GetFeature',

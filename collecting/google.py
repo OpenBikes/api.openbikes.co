@@ -1,7 +1,7 @@
 import json
 from urllib.request import urlopen
 
-import keys
+import variables
 
 
 def chunkify(l, p):
@@ -84,7 +84,7 @@ def altitudes(points, chunk_size=50):
     for loc in locations:
         url = base + 'locations={loc}&key={key}'.format(
             loc=loc,
-            key=keys.GOOGLE_ELEVATION
+            key=variables.GOOGLE_ELEVATION_API_KEY
         )
         with urlopen(url) as response:
             data = json.loads(response.read().decode())
@@ -126,7 +126,7 @@ def distances(origin, destinations, mode, timestamp, chunk_size=20):
     for dest in destinations:
         url = base + 'mode={mode}&key={key}&origins={origin}&destinations={destinations}&time={time}'.format(
             mode=mode,
-            key=keys.GOOGLE_DISTANCE_MATRIX,
+            key=variables.GOOGLE_DISTANCE_MATRIX_API_KEY,
             origin=origin,
             destinations=dest,
             time=timestamp
