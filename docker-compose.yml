@@ -15,17 +15,32 @@ nginx:
   links:
     - web:web
 
-data:
+postgres-data:
   restart: "no"
-  image: postgres:latest
+  image: postgres:9.3
   volumes:
     - /var/lib/postgresql
   command: "true"
 
 postgres:
   restart: always
-  image: postgres:latest
+  image: postgres:9.3
   volumes_from:
-    - data
+    - postgres-data
   ports:
     - "5432:5432"
+
+mongo-data:
+  restart: "no"
+  image: mongo:3.2.1
+  volumes:
+    - /data/db
+  command: "true"
+
+mongo:
+  restart: always
+  image: mongo:3.2.1
+  volumes_from:
+    - mongo-data
+  ports:
+    - "27017:27017"
