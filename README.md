@@ -12,7 +12,9 @@ docker-compose up -d
 ```
 
 
-## Using Makefile
+# Makefile commands
+
+## Dev environment
 
 #### `make install`
 
@@ -22,11 +24,30 @@ Install `requirements.txt`.
 
 Compute tests with **nosetests**.
 
-#### `make dev`
+## Configuration
 
 **Flask** needs a `config.py` file located in `app/` in order to launch the web service.
+
+#### `make dev`
+
 `make dev` creates a symbolink link with `config_dev.py` and `config.py`.
 
 #### `make prod`
 `make dev` creates a symbolink link with `config_prod.py` and `config.py`.
 
+## Setup
+
+#### `make init`
+Init database.
+
+#### `make drop`
+Drop database.
+
+#### `make bikes`
+Launch bikes collecting.
+
+#### `make weather`
+Launch weather collecting.
+
+#### `make train`
+Train regressors.
