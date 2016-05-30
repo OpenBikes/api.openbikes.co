@@ -27,7 +27,6 @@ manager.add_command('shell', Shell(make_context=make_shell_context))
 @manager.command
 def initdb():
     ''' Create the SQL database '''
-    # Create the physical database
     init_db()
     print(colored('The SQL database has been created', 'green'))
 
@@ -49,7 +48,7 @@ def dropdb():
 def addcity(provider, city, city_api, city_owm, country, predictable):
     ''' Add a city to the application '''
     # Check if the city is already in the database
-    if 0 < models.City.query.filter_by(name=city).count():
+    if models.City.query.filter_by(name=city).count() > 0:
         print(colored("'{}' has already been added".format(city), 'cyan'))
         return
     # Get the current information for a city
@@ -102,39 +101,57 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
             error=99
         ))
     session.commit()
-    # Notification
     print(colored("'{}' has been added".format(city), 'green'))
 
 
 @manager.command
-def disablecity(city):
-    ''' Disable a city in the application '''
+def removecity(city):
+    ''' Remove a city in the application '''
     # Check if the city is not in the database
     query = models.City.query.filter_by(name=city)
     if query.count() == 0:
-        print(colored("'{}' is not in the application".format(city), 'cyan'))
+        print(colored("'{}' doesn't exist".format(city), 'cyan'))
         return
-    # Disable the city
+    # Remove the city
     query.delete()
     session.commit()
-    # Notification
     print(colored("{}' has been removed".format(city), 'green'))
 
 
 @manager.command
-def removecity(city):
-    ''' Remove a city from the application '''
+def disablecity(city):
+    ''' Disable a city from the application '''
     # Check if the city is not in the database
     query = models.City.query.filter_by(name=city)
     if query.count() == 0:
-        print(colored('{} is not in the application'.format(city), 'cyan'))
+        print(colored("'{}' doesn't exist".format(city), 'cyan'))
         return
-    # Remove the city
+    # Disable the city
     city = query.first()
+    if not city.active:
+        print(colored("'{}' is already disabled".format(city), 'cyan'))
+        return  
     city.active = False
     session.commit()
-    # Notification
     print(colored("'{}' has been disabled".format(city), 'green'))
+
+
+@manager.command
+def enablecity(city):
+    ''' Enable a city from the application '''
+    # Check if the city is not in the database
+    query = models.City.query.filter_by(name=city)
+    if query.count() == 0:
+        print(colored("'{}' doesn't exist".format(city), 'cyan'))
+        return
+    # Enable the city
+    city = query.first()
+    if city.active:
+        print(colored("'{}' is already enabled".format(city), 'cyan'))
+        return  
+    city.active = True
+    session.commit()
+    print(colored("'{}' has been enabled".format(city), 'green'))
 
 
 if __name__ == '__main__':

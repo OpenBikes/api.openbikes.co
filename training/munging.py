@@ -13,7 +13,7 @@ def split(dataframe, target, ignored=['spaces']):
     return X, Y
 
 
-def extract_features(date):
+def extract_date_features(date):
     ''' Extract relevant time information from a date. '''
     features = {
         'hour': date.hour,
@@ -29,11 +29,9 @@ def prepare(dataframe):
     dataframe = dataframe.groupby(dataframe.index).first()
     # Extract features
     features = pd.DataFrame([
-        extract_features(date)
+        extract_date_features(date)
         for date in dataframe.index
     ])
     features.set_index(dataframe.index, inplace=True)
     dataframe = dataframe.join(features)
-    # Interpolate the missing values
-    #dataframe = dataframe.interpolate(method='time')
     return dataframe

@@ -9,7 +9,7 @@ from collecting import collect
 from mongo.timeseries import insert as insert_bikes
 
 
-def json_to_geojson(json):
+def json_to_geojson(json_object):
     ''' Convert to a format readable by Leaflet. '''
     geojson = {
         'type': 'FeatureCollection',
@@ -21,7 +21,8 @@ def json_to_geojson(json):
                     'coordinates': [entry['longitude'], entry['latitude']]
                 },
                 'properties': entry,
-            } for entry in json]
+            } for entry in json_object
+        ]
     }
     # Remove the duplicated latitude and longitude
     for feature in geojson['features']:

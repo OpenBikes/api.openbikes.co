@@ -1,7 +1,11 @@
-FROM python:3.5-onbuild
+FROM ubuntu:14.04
 
-ADD requirements.txt /tmp/requirements.txt
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    libpq-dev \
+    postgis
 
-RUN make install
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
 
-CMD ["python"]
+COPY . /usr/src/app

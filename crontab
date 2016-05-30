@@ -4,5 +4,5 @@
 # Collect weather data every 15 minutes
 */15 * * * * cd /var/www/api.openbikes.co && python3 collect-weather.py && curl -fsS --retry 3 https://hchk.io/3d610dc4-0a2b-4f33-9560-21f8f9c3977f
 
-# Train regressors every day at 3:30AM
-30 3 * * * cd /var/www/api.openbikes.co && python3 train-regressors.py && curl -fsS --retry 3 https://hchk.io/680396ab-06eb-4706-a45c-6e51fb417305
+# Train regressors every Sunday at 3:30 AM
+30 3 * * 6 cd /var/www/api.openbikes.co && python3 train-regressors.py && curl -fsS --retry 3 https://hchk.io/680396ab-06eb-4706-a45c-6e51fb417305

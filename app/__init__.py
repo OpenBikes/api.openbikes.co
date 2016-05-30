@@ -2,7 +2,6 @@ import sys
 import os
 
 from flask import Flask
-from flask.ext.babel import Babel
 from flask_debugtoolbar import DebugToolbarExtension
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.profile import Profiler
@@ -20,9 +19,6 @@ db = SQLAlchemy(app)
 
 # Add the top level to the import path
 sys.path.append('..')
-
-# Setup Babel
-babel = Babel(app)
 
 # Import the views
 from app.views import (

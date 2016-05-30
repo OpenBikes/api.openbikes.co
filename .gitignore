@@ -1,8 +1,8 @@
 *.pyc
 *.zip
-ngrok
 *.geojson
 *.db
 *.log
-config.py
 .env
+config.py
+ngrok

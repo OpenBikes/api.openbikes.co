@@ -1,4 +1,4 @@
-# OpenBikes Makefile
+# api.openbikes.co Makefile
 
 ## Configuration
 
@@ -7,20 +7,21 @@ PROJECT    := $(shell basename $(PWD))
 
 ## Commands
 
-all: install 
+all:
+	install 
 
-# Install dependencies
+### Install dependencies
 install:
 	pip3 install -r requirements.txt
 
-# Compute some tests
+### Run tests
 test:
 	nosetests
 
-# Set up developpement environment
+### Setup developpement environment
 dev:
 	ln -s app/config_dev.py app/config.py
 
-# Set up production environment
+### Setup production environment
 prod:
 	ln -s app/config_prod.py app/config.py

@@ -1,4 +1,7 @@
+import os
+
 import requests
+
 from collecting import util
 
 
