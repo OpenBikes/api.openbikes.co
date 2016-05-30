@@ -25,3 +25,24 @@ dev:
 prod:
 	[ -f app/config_prod.py ] && ln -sfn app/config_prod.py app/config.py || echo "File config_prod.py does not exist"
 
+
+# Init database
+initdb:
+	python3 initdb
+
+# Drop database
+dropdb:
+	python3 dropdb
+
+# Collect bikes
+bikes:
+	python3 collect-bikes.py
+
+# Collect weather
+weather:
+	python3 collect-weather.py
+
+# Train regressors
+train:
+	python3 train-regressors.py
+
