@@ -19,8 +19,9 @@ test:
 
 # Set up developpement environment
 dev:
-	ln -s app/config_dev.py app/config.py
+	[ -f app/config_dev.py ] && ln -sfn app/config_dev.py app/config.py || echo "File config_dev.py does not exist"
 
 # Set up production environment
 prod:
-	ln -s app/config_prod.py app/config.py
+	[ -f app/config_prod.py ] && ln -sfn app/config_prod.py app/config.py || echo "File config_prod.py does not exist"
+
