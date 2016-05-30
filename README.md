@@ -43,13 +43,3 @@ docker-compose up -d
 ### In production
 
 ## Running locally
-
-## Using Makefile
-
-#### `make dev`
-
-Install `requirements.txt`.
-
-## Tests
-
-- `make test` to run tests.

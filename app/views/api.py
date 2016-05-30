@@ -26,7 +26,7 @@ def api_geojson(city):
             'status': 'failure',
             'message': str(exc)
         }), 404
-
+        
 
 @API_BP.route('/countries', methods=['GET'])
 def api_countries():
@@ -67,7 +67,7 @@ def api_providers():
     ))
     return jsonify({
         'status': 'success',
-        'countries': providers,
+        'providers': providers,
         'count': len(providers)
     }), 200
 
