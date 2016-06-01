@@ -1,13 +1,12 @@
-import datetime as dt
-
 from flask.ext.script import Manager, Server, Shell, prompt_bool
 import numpy as np
 from termcolor import colored
 
 from app import app
 from app import models
-from app import session
-from app.database import init_db, drop_db
+from app import services as srv
+from app import util
+from app.database import init_db, drop_db, session
 from collecting import collect
 from collecting import google
 
@@ -57,7 +56,7 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
     except:
         print(colored("Couldn't get stations data for '{}'".format(city), 'red'))
         return
-    # Add the altitudes of every station
+    # Fetch the altitudes of every station
     try:
         altitudes = google.altitudes(stations)
     except:
@@ -67,40 +66,22 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
     mean_lat = np.mean([station['latitude'] for station in stations])
     mean_lon = np.mean([station['longitude'] for station in stations])
     new_city = models.City(
+        active=True,
+        country=country,
+        latitude=mean_lat,
+        longitude=mean_lon,
         name=city,
         name_api=city_api,
         name_owm=city_owm,
         position='POINT({0} {1})'.format(mean_lat, mean_lon),
-        latitude=mean_lat,
-        longitude=mean_lon,
         predictable=predictable,
-        active=True,
-        country=country,
-        provider=provider
+        provider=provider,
+        slug=util.slugify(city)
     )
     session.add(new_city)
-    session.flush()
-    # Add the stations and their initial training schedules
-    for station, altitude in zip(stations, altitudes):
-        new_station = models.Station(
-            name=station['name'],
-            docks=station['bikes'] + station['stands'],
-            position='POINT({0} {1})'.format(station['latitude'], station['longitude']),
-            latitude=station['latitude'],
-            longitude=station['longitude'],
-            altitude=altitude['elevation'],
-            city_id=new_city.id
-        )
-        session.add(new_station)
-        session.flush()
-        session.add(models.Training(
-            moment=dt.datetime.now(),
-            backward=7,
-            forward=7,
-            station_id=new_station.id,
-            error=99
-        ))
     session.commit()
+    # Add the stations and their initial training schedules
+    srv.insert_stations(new_city.id, stations, altitudes)
     print(colored("'{}' has been added".format(city), 'green'))
 
 
@@ -119,6 +100,52 @@ def removecity(city):
 
 
 @manager.command
+def refreshcity(city):
+    ''' Refresh a city in the application '''
+    # Check if the city is not in the database
+    query = models.City.query.filter_by(name=city)
+    if query.count() == 0:
+        print(colored("'{}' doesn't exist".format(city), 'cyan'))
+        return
+    city = query.first()
+    # Get the current information for a city
+    try:
+        stations = collect(city.provider, city.name_api)
+    except:
+        print(colored("Couldn't get stations data for '{}'".format(city.name), 'red'))
+        return
+    # Delete the stations that don't exist anymore
+    new_station_names = [station['name'] for station in stations]
+    existing_stations = models.Station.query.filter_by(city_id=city.id)
+    stations_to_delete = [
+        station
+        for station in existing_stations
+        if station.name not in new_station_names
+    ]
+    for station in stations_to_delete:
+        session.delete(station)
+    session.commit()
+    # Add the new stations
+    old_station_names = [station.name for station in existing_stations]
+    new_stations = [
+        station
+        for station in stations
+        if station['name'] not in old_station_names
+    ]
+    # Add the altitudes of every station
+    try:
+        altitudes = google.altitudes(new_stations)
+    except:
+        print(colored("Couldn't get altitudes for '{}'".format(city.name), 'red'))
+        return
+    # Add the stations and their initial training schedules
+    srv.insert_stations(city.id, stations, altitudes)
+    print(colored("'{}' has been updated, {} station(s) was(ere) added and {} was(ere) deleted".format(
+        city.name, len(new_stations), len(stations_to_delete)
+    ), 'green'))
+
+
+@manager.command
 def disablecity(city):
     ''' Disable a city from the application '''
     # Check if the city is not in the database
@@ -130,7 +157,7 @@ def disablecity(city):
     city = query.first()
     if not city.active:
         print(colored("'{}' is already disabled".format(city), 'cyan'))
-        return  
+        return
     city.active = False
     session.commit()
     print(colored("'{}' has been disabled".format(city), 'green'))
@@ -148,7 +175,7 @@ def enablecity(city):
     city = query.first()
     if city.active:
         print(colored("'{}' is already enabled".format(city), 'cyan'))
-        return  
+        return
     city.active = True
     session.commit()
     print(colored("'{}' has been enabled".format(city), 'green'))

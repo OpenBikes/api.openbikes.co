@@ -6,7 +6,6 @@ import datetime as dt
 from scipy.stats import norm
 
 from app import app
-from app import models
 from app.exceptions import (
     CityNotFound,
     CityInactive,
@@ -15,7 +14,63 @@ from app.exceptions import (
     InvalidKind,
     PastTimestamp
 )
+from app import util
+from app import models
+from app.database import session
 from collecting import google
+
+
+def insert_stations(city_id, stations, altitudes):
+    '''
+    Insert stations and training schedules into the database.
+
+    Args:
+        city (str): A city identifier (the primary key in the database) which
+            will be used as a foreign key to link the station to it's belonging
+            city.
+        stations (list of dicts): A list of dictionaries containing information
+            relative to each station. The expected format is:
+                {
+                    'bikes': int,
+                    'latitude': float,
+                    'longitude': float,
+                    'name': str,
+                    'stands': int
+                }
+        altitudes (list of dicts): A list of dictionaries containing information
+            relative to each station's altitude. The expected format is:
+                {
+                    'elevation': float
+                }
+    Returns:
+        boolean: An indicator to make sure the insertions took place.
+    '''
+    try:
+        for station, altitude in zip(stations, altitudes):
+            new_station = models.Station(
+                altitude=altitude['elevation'],
+                city_id=city_id,
+                docks=station['bikes'] + station['stands'],
+                latitude=station['latitude'],
+                longitude=station['longitude'],
+                name=station['name'],
+                position='POINT({0} {1})'.format(station['latitude'], station['longitude']),
+                slug=util.slugify(station['name'])
+            )
+            session.add(new_station)
+            session.flush()
+            session.add(models.Training(
+                backward=7,
+                error=99,
+                forward=7,
+                moment=dt.datetime.now(),
+                station_id=new_station.id
+            ))
+        session.commit()
+        return True
+    except:
+        session.rollback()
+        return False
 
 
 def geojson(city):
@@ -103,12 +158,13 @@ def get_providers(name=None, country=None, as_query=False):
         return (provider._asdict() for provider in providers)
 
 
-def get_cities(name=None, country=None, provider=None, predictable=None, active=None, as_query=False):
+def get_cities(name=None, slug=None, country=None, provider=None, predictable=None, active=None, as_query=False):
     '''
     Filter and return a dictionary or query of cities.
 
     Args:
         name (str): A city name.
+        slug (str): The slugified city name.
         country (str): A country name.
         provider (str): A data provider name.
         predicable (bool): An indicator if the city is predicable or not.
@@ -120,18 +176,23 @@ def get_cities(name=None, country=None, provider=None, predictable=None, active=
     '''
     # Restrict the returned fields
     query = models.City.query.with_entities(
-        models.City.name,
-        models.City.latitude,
-        models.City.longitude,
-        models.City.predictable,
         models.City.active,
         models.City.country,
-        models.City.provider
+        models.City.latitude,
+        models.City.longitude,
+        models.City.name,
+        models.City.predictable,
+        models.City.provider,
+        models.City.slug
     )
 
     # Filter on the city name
     if name:
         query = query.filter_by(name=name)
+
+    # Filter on the slug
+    if slug:
+        query = query.filter_by(slug=slug)
 
     # Filter if predictions are available or not
     if predictable:
@@ -155,12 +216,14 @@ def get_cities(name=None, country=None, provider=None, predictable=None, active=
         cities = query.all()
         return (city._asdict() for city in cities)
 
-def get_stations(name=None, city=None, as_query=False):
+
+def get_stations(name=None, slug=None, city=None, as_query=False):
     '''
     Filter and return a dictionary or query of stations.
 
     Args:
         name (str): A station name.
+        slug (str): The slugified station name.
         city (str): A city name.
         as_query (bool): Return the query object or a generator.
 
@@ -169,15 +232,20 @@ def get_stations(name=None, city=None, as_query=False):
     '''
     # Restrict the returned fields
     query = models.Station.query.with_entities(
-        models.Station.name,
+        models.Station.altitude,
         models.Station.latitude,
         models.Station.longitude,
-        models.Station.altitude
+        models.Station.name,
+        models.Station.slug
     )
 
     # Filter on the station name
     if name:
         query = query.filter_by(name=name)
+
+    # Filter on the slug
+    if slug:
+        query = query.filter_by(slug=slug)
 
     # Filter on the belonging city
     if city:

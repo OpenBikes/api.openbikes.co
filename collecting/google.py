@@ -73,6 +73,8 @@ def altitudes(points, chunk_size=50):
         List(dict): The result of the Google Maps Elevation API for
             each provided point.
     '''
+    if len(points) == 0:
+        return []
     # Chunkify the points to not hit the API threshold
     chunks = chunkify(points, chunk_size)
     # Concatenate each chunk into a query string

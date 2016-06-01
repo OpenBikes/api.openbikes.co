@@ -91,7 +91,7 @@ def optimize(regressor, training):
         return False
 
 
-def update(station):
+def train(station):
     ''' Train a regressor for a station and save it. '''
     method = DecisionTreeRegressor(max_depth=6)
     # Train a regressor for the bikes and another one the spaces
@@ -106,8 +106,8 @@ def update(station):
     session.commit()
     # Save the regressor
     util.save_regressor(best['regressor'],
-                        station.city.name,
-                        station.name)
+                        station.city.slug,
+                        station.slug)
 
 for station in models.Station.query:
-    update(station)
+    train(station)

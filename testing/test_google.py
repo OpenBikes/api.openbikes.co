@@ -13,7 +13,7 @@ def test_google_chunkify_error():
 
 
 def test_google_chunkify():
-    ''' Check chunkify works as expected. '''
+    ''' Check google.chunkify works as expected. '''
     p = 10
     for n in (1, 10, 42, 300):
         items = [i for i in range(n)]
@@ -32,7 +32,7 @@ def test_google_chunkify():
 
 
 def test_google_unchunkify():
-    ''' Check unchunkify works as expected. '''
+    ''' Check google.unchunkify works as expected. '''
     for m in (1, 2, 3):
         for n in (1, 2, 3):
             # Generate sorted sublists of sorted values
@@ -55,7 +55,7 @@ def test_google_unchunkify():
 
 
 def test_google_googleify():
-    ''' Check googleify works as expected. '''
+    ''' Check google.googleify works as expected. '''
     n = 30
     points = [
         {'latitude': 1, 'longitude': 1}
@@ -64,3 +64,8 @@ def test_google_googleify():
     locations = google.googleify(points)
     assert len(locations.split('|')) == n
 
+
+def test_google_altitudes_empty():
+    ''' Check google.altitudes returns empty output on empty input. '''
+    altitudes = google.googleify([])
+    assert len(altitudes) == 0

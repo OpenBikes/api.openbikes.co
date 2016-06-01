@@ -26,7 +26,7 @@ def api_geojson(city):
             'status': 'failure',
             'message': str(exc)
         }), 404
-        
+
 
 @API_BP.route('/countries', methods=['GET'])
 def api_countries():
@@ -78,13 +78,14 @@ def api_cities():
     args = request.args
     # Check arguments are valid
     for arg in args:
-        if arg not in ('name', 'country', 'provider', 'predictable', 'active'):
+        if arg not in ('name', 'slug', 'country', 'provider', 'predictable', 'active'):
             return jsonify({
                 'status': 'failure',
                 'message': "'{}' is not a valid parameter".format(arg)
             }), 400
     cities = list(srv.get_cities(
         name=args.get('name'),
+        slug=args.get('slug'),
         country=args.get('country'),
         provider=args.get('provider'),
         predictable=args.get('predictable'),
@@ -103,13 +104,14 @@ def api_stations():
     args = request.args
     # Check arguments are valid
     for arg in args:
-        if arg not in ('name', 'city'):
+        if arg not in ('name', 'slug', 'city'):
             return jsonify({
                 'status': 'failure',
                 'message': "'{}' is not a valid parameter".format(arg)
             }), 400
     stations = list(srv.get_stations(
         name=args.get('name'),
+        slug=args.get('slug'),
         city=args.get('city')
     ))
     return jsonify({

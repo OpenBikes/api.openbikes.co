@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 
 
 def epoch_to_datetime(epoch, divisor=1):
-    ''' Convert a UNIX timestamp to ISO formatted time. '''
+    ''' Convert a UNIX timestamp to a datetime. '''
     moment = dt.datetime.fromtimestamp(round(epoch / divisor))
     return moment
 

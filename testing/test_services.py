@@ -65,23 +65,8 @@ def test_srv_get_cities_nil():
 
 def test_srv_get_cities_all_params():
     ''' Check get_cities service works will all parameters. '''
-    cities = srv.get_cities(name='Toulouse', country='France', provider='jcdecaux',
-                            predictable=True, active=True)
-    assert isinstance(cities, types.GeneratorType)
-    assert len(list(cities)) == 1
-
-
-def test_srv_get_cities_nil():
-    ''' Check get_cities service returns nothing with an invalid name. '''
-    cities = srv.get_cities(name='xyz')
-    assert isinstance(cities, types.GeneratorType)
-    assert len(list(cities)) == 0
-
-
-def test_srv_get_cities_all_params():
-    ''' Check get_ities service works will all parameters. '''
-    cities = srv.get_cities(name='Toulouse', country='France', provider='jcdecaux',
-                            predictable=True, active=True)
+    cities = srv.get_cities(name='Toulouse', slug='toulouse', country='France',
+                            provider='jcdecaux', predictable=True, active=True)
     assert isinstance(cities, types.GeneratorType)
     assert len(list(cities)) == 1
 
@@ -95,7 +80,8 @@ def test_srv_get_stations_nil():
 
 def test_srv_get_stations_all_params():
     ''' Check get_stations service works will all parameters. '''
-    stations = srv.get_stations(name='00003 - POMME', city='Toulouse')
+    stations = srv.get_stations(name='00003 - POMME', slug='00003-pomme',
+                                city='Toulouse')
     assert isinstance(stations, types.GeneratorType)
     assert len(list(stations)) == 1
 

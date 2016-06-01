@@ -2,7 +2,7 @@
 
 ## Environment variables
 
-Whatever the setup target (development or production), with or without Docker, **add a `.env` file** with the following variables (without quotes).
+Whatever the setup target (development or production), with or without Docker, **add a `.env` file** with the following variables (no quotes needed).
 
 ```sh
 GOOGLE_ELEVATION_API_KEY=https://developers.google.com/maps/documentation/elevation
@@ -30,7 +30,7 @@ Install the [Docker toolbox](https://www.docker.com/products/docker-toolbox) and
 ### Locally
 
 ```sh
-docker-machine create -d virtualbox dev;
+docker-machine create -d virtualbox dev
 eval "$(docker-machine env dev)"
 docker-compose build
 docker-compose up -d
@@ -39,6 +39,7 @@ docker-compose up -d
 - Don't forget to `docker-machine stop dev` when you're done so that the container stops running in the background.
 - Use `docker-machine start dev` to boot up the dev container the next time you want to use it.
 - If you encounter a problem then you can `docker-machine rm dev` and start again.
+- A good internet connection makes the process painless.
 
 ### In production
 
