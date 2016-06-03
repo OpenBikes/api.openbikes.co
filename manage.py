@@ -140,7 +140,7 @@ def refreshcity(city):
         return
     # Add the stations and their initial training schedules
     srv.insert_stations(city.id, stations, altitudes)
-    print(colored("'{}' has been updated, {} station(s) was(ere) added and {} was(ere) deleted".format(
+    print(colored("'{}' stations have been updated, {} insertion(s), {} deletion(s)".format(
         city.name, len(new_stations), len(stations_to_delete)
     ), 'green'))
 
