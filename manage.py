@@ -6,7 +6,7 @@ from app import app
 from app import models
 from app import services as srv
 from app import util
-from app.database import init_db, drop_db, session
+from app.database import init_db, drop_db, db_session
 from collecting import collect
 from collecting import google
 
@@ -78,8 +78,8 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
         provider=provider,
         slug=util.slugify(city)
     )
-    session.add(new_city)
-    session.commit()
+    db_session.add(new_city)
+    db_session.commit()
     # Add the stations and their initial training schedules
     srv.insert_stations(new_city.id, stations, altitudes)
     print(colored("'{}' has been added".format(city), 'green'))
@@ -95,7 +95,7 @@ def removecity(city):
         return
     # Remove the city
     query.delete()
-    session.commit()
+    db_session.commit()
     print(colored("{}' has been removed".format(city), 'green'))
 
 
@@ -123,8 +123,8 @@ def refreshcity(city):
         if station.name not in new_station_names
     ]
     for station in stations_to_delete:
-        session.delete(station)
-    session.commit()
+        db_session.delete(station)
+    db_session.commit()
     # Add the new stations
     old_station_names = [station.name for station in existing_stations]
     new_stations = [
@@ -159,7 +159,7 @@ def disablecity(city):
         print(colored("'{}' is already disabled".format(city), 'cyan'))
         return
     city.active = False
-    session.commit()
+    db_session.commit()
     print(colored("'{}' has been disabled".format(city), 'green'))
 
 
@@ -177,7 +177,7 @@ def enablecity(city):
         print(colored("'{}' is already enabled".format(city), 'cyan'))
         return
     city.active = True
-    session.commit()
+    db_session.commit()
     print(colored("'{}' has been enabled".format(city), 'green'))
 
 

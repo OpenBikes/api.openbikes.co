@@ -10,13 +10,13 @@ from app.exceptions import (
     CityNotFound,
     CityInactive,
     CityUnpredicable,
-    StationNotFound,
     InvalidKind,
-    PastTimestamp
+    PastTimestamp,
+    StationNotFound
 )
 from app import util
 from app import models
-from app.database import session
+from app.database import db_session
 from collecting import google
 
 
@@ -57,19 +57,19 @@ def insert_stations(city_id, stations, altitudes):
                 position='POINT({0} {1})'.format(station['latitude'], station['longitude']),
                 slug=util.slugify(station['name'])
             )
-            session.add(new_station)
-            session.flush()
-            session.add(models.Training(
+            db_session.add(new_station)
+            db_session.flush()
+            db_session.add(models.Training(
                 backward=7,
                 error=99,
                 forward=7,
                 moment=dt.datetime.now(),
                 station_id=new_station.id
             ))
-        session.commit()
+        db_session.commit()
         return True
     except:
-        session.rollback()
+        db_session.rollback()
         return False
 
 

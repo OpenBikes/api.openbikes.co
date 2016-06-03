@@ -1,5 +1,5 @@
-from sqlalchemy import create_engine
 import contextlib
+from sqlalchemy import create_engine
 import sqlalchemy.exc
 
 from app import app
@@ -11,7 +11,7 @@ engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'],
 
 # Use Flask-Alchemy's base model
 Model = db.Model
-session = db.session
+db_session = db.session
 
 
 def init_db():
@@ -23,8 +23,8 @@ def init_db():
         with create_engine(url, isolation_level='AUTOCOMMIT').connect() as conn:
             conn.execute("CREATE DATABASE {} WITH encoding='utf-8'".format(name))
     # Add postgis extension
-    session.execute('CREATE EXTENSION postgis')
-    session.commit()
+    db_session.execute('CREATE EXTENSION postgis')
+    db_session.commit()
     Model.metadata.create_all(bind=engine)
 
 

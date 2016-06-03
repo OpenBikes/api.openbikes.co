@@ -4,8 +4,9 @@ from sklearn.tree import DecisionTreeRegressor
 import numpy as np
 
 from app import app
+from app import logger
 from app import models
-from app.database import session
+from app.database import db_session
 from mongo.timeseries import query
 from training import munging
 from training import util
@@ -40,11 +41,13 @@ def optimize(regressor, training):
                              since=since,
                              until=now)
     except:
-        app.logger.info("No data found for '{0}' from {1} till {2}".format(
-            training.station.name,
-            since.date(),
-            now.date()
-        ))
+        logger.info(
+            'No data available',
+            city=training.station.city.name,
+            station=training.station.name,
+            since=since.date(),
+            until=now.date()
+        )
         return False
     # Run a grid search to obtain a regressor
     df = munging.prepare(data)
@@ -61,10 +64,14 @@ def optimize(regressor, training):
         train = df.truncate(before=timeline[0], after=timeline[1])
         test = df.truncate(before=timeline[1], after=timeline[2])
         if len(train) == 0 or len(test) == 0:
-            app.logger.warning("Not enough data for training '{0}' with timeline {1}".format(
-                training.station.name,
-                [time.date().isoformat() for time in timeline]
-            ))
+            logger.warning(
+                'Not enough training data',
+                city=training.station.city.name,
+                station=training.station.name,
+                t0=timeline[0],
+                t1=timeline[1],
+                t2=timeline[2]
+            )
             continue
         # Split the training set into features and targets
         X_train, Y_train = munging.split(dataframe=train, target='bikes')
@@ -103,7 +110,7 @@ def train(station):
     station.training.backward = best['backward']
     station.training.forward = forward
     station.training.error = best['score']
-    session.commit()
+    db_session.commit()
     # Save the regressor
     util.save_regressor(best['regressor'],
                         station.city.slug,

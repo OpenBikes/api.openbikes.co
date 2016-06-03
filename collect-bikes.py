@@ -4,6 +4,7 @@ import json
 from joblib import Parallel, delayed
 
 from app import app
+from app import logger
 from app import models
 from collecting import collect
 from mongo.timeseries import insert as insert_bikes
@@ -37,7 +38,7 @@ def fetch_data(city):
     try:
         stations = collect(city.provider, city.name_api)
     except:
-        app.logger.warning("Couldn't get data for {}".format(city.name))
+        logger.warning("Couldn't retrieve station data", city=city.name)
         return
     # Update the database if the city can be predicted
     if city.predictable is True:

@@ -5,7 +5,7 @@ from nose.tools import raises
 
 from app import services as srv
 from app import models
-from app.database import session
+from app.database import db_session
 from app.exceptions import (
     CityNotFound,
     CityInactive,
@@ -143,7 +143,7 @@ def test_srv_make_forecast_city_inactive():
     # Setup
     city = models.City.query.filter_by(name='Toulouse').first()
     city.active = False
-    session.commit()
+    db_session.commit()
     # Test
     @raises(CityInactive)
     def test():
@@ -153,7 +153,7 @@ def test_srv_make_forecast_city_inactive():
     # Tear down
     city = models.City.query.filter_by(name='Toulouse').first()
     city.active = True
-    session.commit()
+    db_session.commit()
 
 
 def test_srv_make_forecast_city_unpredictable():
@@ -161,7 +161,7 @@ def test_srv_make_forecast_city_unpredictable():
     # Setup
     city = models.City.query.filter_by(name='Toulouse').first()
     city.predictable = False
-    session.commit()
+    db_session.commit()
     # Test
     @raises(CityUnpredicable)
     def test():
@@ -171,7 +171,7 @@ def test_srv_make_forecast_city_unpredictable():
     # Tear down
     city = models.City.query.filter_by(name='Toulouse').first()
     city.predictable = True
-    session.commit()
+    db_session.commit()
 
 
 def test_srv_make_forecast_bikes():
