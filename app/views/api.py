@@ -5,9 +5,9 @@ from app.exceptions import (
     CityNotFound,
     CityInactive,
     CityUnpredicable,
-    StationNotFound,
+    InvalidKind,
     PastTimestamp,
-    InvalidKind
+    StationNotFound
 )
 
 

@@ -2,7 +2,7 @@ import datetime as dt
 
 from app import app
 from app import models
-from app.database import session
+from app.database import db_session
 
 
 client = app.test_client()
@@ -146,7 +146,7 @@ def test_api_forecast_city_disabled():
     # Setup
     city = models.City.query.filter_by(name='Toulouse').first()
     city.active = False
-    session.commit()
+    db_session.commit()
     # Test
     rv = client.get('/api/forecast/{city}/{station}/{kind}/{timestamp}'.format(
         city='Toulouse',
@@ -158,7 +158,7 @@ def test_api_forecast_city_disabled():
     # Tear down
     city = models.City.query.filter_by(name='Toulouse').first()
     city.active = True
-    session.commit()
+    db_session.commit()
 
 
 def test_api_forecast_city_unpredicable():
@@ -166,7 +166,7 @@ def test_api_forecast_city_unpredicable():
     # Setup
     city = models.City.query.filter_by(name='Toulouse').first()
     city.predictable = False
-    session.commit()
+    db_session.commit()
     # Test
     rv = client.get('/api/forecast/{city}/{station}/{kind}/{timestamp}'.format(
         city='Toulouse',
@@ -178,7 +178,7 @@ def test_api_forecast_city_unpredicable():
     # Tear down
     city = models.City.query.filter_by(name='Toulouse').first()
     city.predictable = True
-    session.commit()
+    db_session.commit()
 
 
 def test_api_forecast_bikes():
