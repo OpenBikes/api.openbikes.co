@@ -5,9 +5,6 @@ import sys
 import time
 
 from flask import Flask, request, session
-from flask_debugtoolbar import DebugToolbarExtension
-from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.profile import Profiler
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
@@ -17,12 +14,6 @@ app = Flask(__name__)
 # Configure the application
 app.config.from_object('app.config_common')
 app.config.from_object('app.config')
-
-
-# Debug toolbar
-toolbar = DebugToolbarExtension(app)
-Profiler(app)
-db = SQLAlchemy(app)
 
 
 # Add the top level to the import path

@@ -22,5 +22,5 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{pwd}@{host}:{port}/{name}'.forma
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 
 # Logger settings
-LOG_MAXBYTES = 10e9
+LOG_MAXBYTES = 10e8 # 100 MB
 LOG_BACKUPS = 3

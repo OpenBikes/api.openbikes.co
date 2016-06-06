@@ -25,15 +25,17 @@ POSTGRES_DBNAME=openbikes
 
 ## Running Docker
 
-Install the [Docker toolbox](https://www.docker.com/products/docker-toolbox) and then run the following commands.
+Install the [Docker toolbox](https://www.docker.com/products/docker-toolbox) and then run the following commands for either running Docker locally or in production. Don't forget to `docker commit` when applying changes to a container.
 
 ### Locally
 
 ```sh
 docker-machine create -d virtualbox dev
+docker-machine env dev
 eval "$(docker-machine env dev)"
 docker-compose build
 docker-compose up -d
+docker-compose run web make dev
 ```
 
 - Don't forget to `docker-machine stop dev` when you're done so that the container stops running in the background.
