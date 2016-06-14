@@ -59,6 +59,6 @@ logger = wrap_logger(
     app.logger,
     processors=[
         add_fields,
-        JSONRenderer(indent=1, sort_keys=True)
+        JSONRenderer(indent=None)
     ]
 )

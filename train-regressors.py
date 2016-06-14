@@ -3,7 +3,6 @@ import datetime as dt
 from sklearn.tree import DecisionTreeRegressor
 import numpy as np
 
-from app import app
 from app import logger
 from app import models
 from app.database import db_session

@@ -5,16 +5,18 @@ import sys
 import time
 
 from flask import Flask, request, session
+from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
 app = Flask(__name__)
 
-
 # Configure the application
 app.config.from_object('app.config_common')
 app.config.from_object('app.config')
 
+# Create an SQLAlchemy binding
+db = SQLAlchemy(app)
 
 # Add the top level to the import path
 sys.path.append('..')
