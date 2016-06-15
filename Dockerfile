@@ -1,7 +1,7 @@
 FROM ubuntu:14.04
 
 RUN apt-get update && apt-get install -y \
-    gcc \
+    g++ \
     gfortran \
     libatlas-base-dev \
     libblas-dev \
@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
 
 ADD https://raw.githubusercontent.com/pypa/pip/5d927de5cdc7c05b1afbdd78ae0d1b127c04d9d0/contrib/get-pip.py /root/get-pip.py
 RUN python3.4 /root/get-pip.py
+RUN pip3 install --upgrade pip
 
 RUN mkdir -p /usr/src/app
 

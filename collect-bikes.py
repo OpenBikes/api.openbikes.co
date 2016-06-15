@@ -1,8 +1,6 @@
 import os
 import json
 
-from joblib import Parallel, delayed
-
 from app import app
 from app import logger
 from app import models
@@ -46,7 +44,7 @@ def fetch_data(city):
     # Save the data for the map
     geojson = json_to_geojson(stations)
     file_name = '{}.geojson'.format(city.name)
-    path = os.path.join(app.config['GEOJSON_FOLDER'], file_name)
+    path = os.path.join(os.environ.get('GEOJSON_FOLDER'), file_name)
     with open(path, 'w') as outfile:
         json.dump(geojson, outfile)
 
@@ -54,4 +52,7 @@ def fetch_data(city):
 query = models.City.query.filter_by(active=True)
 cities = query.all()
 
-Parallel(n_jobs=2)(delayed(fetch_data)(city) for city in cities)
+[fetch_data(city) for city in cities]
+
+#from joblib import Parallel, delayed
+#Parallel(n_jobs=2)(delayed(fetch_data)(city) for city in cities)

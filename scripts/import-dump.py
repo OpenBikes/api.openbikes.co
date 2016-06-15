@@ -43,7 +43,7 @@ notify('Established database connections', 'green')
 if C['local']['ts'].find().count() != 0:
     # Get the most recent date in the local database
     max_date = C['local']['ts'].find_one(sort=[('_id', -1)])['_id']
-    # Delete the latest document in case of incomplete data
+    # Delete the latest document to avoid incomplete data
     C['local']['ts'].delete_one({'_id': max_date})
     notify('Will only import data for {0} after {1} (included)'.format(city, max_date), 'yellow')
     # Query the relevant data on the remove server
@@ -58,5 +58,5 @@ notify('Fetched {0} document(s)'.format(total), 'cyan')
 # Insert it locally
 for i, c in enumerate(cursor):
     notify('Inserting document {0} out of {1}'.format(i + 1, total), 'cyan')
-    C['local']['ts'].insert(c) 
+    C['local']['ts'].insert(c)
 notify('Done', 'green')

@@ -86,7 +86,7 @@ def geojson(city):
     Raises:
         CityNotFound: The geojson file cannot be found.
     '''
-    path = os.path.join(app.config['GEOJSON_FOLDER'], '{}.geojson'.format(city))
+    path = os.path.join(os.environ.get('GEOJSON_FOLDER'), '{}.geojson'.format(city))
     try:
         with open(path, 'r') as infile:
             return json.loads(infile.read())
@@ -275,7 +275,7 @@ def get_updates(city=None):
 
     # Get the information on all the geojson files
     geojson_files = glob.glob('{0}/{1}.geojson'.format(
-        app.config['GEOJSON_FOLDER'],
+        os.environ.get('GEOJSON_FOLDER'),
         token
     ))
     if len(geojson_files) == 0:

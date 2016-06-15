@@ -24,7 +24,8 @@ sys.path.append('..')
 
 # Import the views
 from app.views import (
-    api
+    api,
+    main
 )
 app.register_blueprint(api.API_BP)
 
@@ -71,9 +72,9 @@ def before_request():
 def measure_elapsed_time(response):
     elapsed_time = time.time() - request.start_time
     if elapsed_time > 0.2:
-        logger.warning(u'Slow request',
+        logger.warning('Slow request',
                        endpoint=request.endpoint,
-                       duration='{:.3f}'.format(elapsed_time),
+                       duration=elapsed_time,
                        queries_count=request.queries_count,
                        queries_duration='{:.3f}'.format(request.queries_duration))
     return response
@@ -102,7 +103,7 @@ def after_cursor_execute(conn, cursor, statement, parameters, context, executema
 
 
 # Create the necessary folders if they don't exist
-if not os.path.exists(app.config['GEOJSON_FOLDER']):
-    os.makedirs(app.config['GEOJSON_FOLDER'])
-if not os.path.exists(app.config['REGRESSORS_FOLDER']):
-    os.makedirs(app.config['REGRESSORS_FOLDER'])
+if not os.path.exists(os.environ.get('GEOJSON_FOLDER')):
+    os.makedirs(os.environ.get('GEOJSON_FOLDER'))
+if not os.path.exists(os.environ.get('REGRESSORS_FOLDER')):
+    os.makedirs(os.environ.get('REGRESSORS_FOLDER'))

@@ -25,7 +25,7 @@ POSTGRES_DBNAME=openbikes
 
 ## Running Docker
 
-Install the [Docker toolbox](https://www.docker.com/products/docker-toolbox) and then run the following commands for either running Docker locally or in production. Don't forget to `docker commit` when applying changes to a container.
+Install the [Docker toolbox](https://www.docker.com/products/docker-toolbox) and then run the following commands for either running Docker locally or in production.
 
 ### Locally
 

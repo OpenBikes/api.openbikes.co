@@ -27,6 +27,7 @@ You can build a log incrementally as so:
 import datetime as dt
 import logging
 from logging.handlers import RotatingFileHandler
+import pytz
 
 from flask import session
 from structlog import wrap_logger
@@ -37,9 +38,12 @@ from app import app
 # Set the logging level
 app.logger.setLevel(app.config['LOG_LEVEL'])
 
+tz = pytz.timezone('Europe/Paris')
+
 def add_fields(_, level, event_dict):
-    """Add custom fields to each record"""
-    event_dict['timestamp'] = dt.datetime.now().isoformat()
+    ''' Add custom fields to each record. '''
+    now = dt.datetime.now()
+    event_dict['timestamp'] = tz.localize(now, True).astimezone(pytz.utc).isoformat()
     event_dict['session_id'] = session.get('session_id')
     event_dict['level'] = level
     return event_dict

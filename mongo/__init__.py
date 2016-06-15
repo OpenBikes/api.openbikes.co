@@ -1,3 +1,5 @@
+import os
+
 from pymongo import MongoClient
 
-client = MongoClient(connect=False)
+client = MongoClient(os.environ.get('MONGO_HOST'), int(os.environ.get('MONGO_PORT')))

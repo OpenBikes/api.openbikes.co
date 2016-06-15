@@ -1,4 +1,4 @@
-from flask.ext.script import Manager, Server, Shell, prompt_bool
+from flask.ext.script import Manager, prompt_bool, Shell, Server
 import numpy as np
 from termcolor import colored
 

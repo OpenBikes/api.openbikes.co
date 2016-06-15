@@ -23,7 +23,10 @@ def init_db():
         with create_engine(url, isolation_level='AUTOCOMMIT').connect() as conn:
             conn.execute("CREATE DATABASE {} WITH encoding='utf-8'".format(name))
     # Add postgis extension
-    db_session.execute('CREATE EXTENSION postgis')
+    try:
+        db_session.execute('CREATE EXTENSION postgis')
+    except sqlalchemy.exc.ProgrammingError:
+        pass
     db_session.commit()
     Model.metadata.create_all(bind=engine)
 

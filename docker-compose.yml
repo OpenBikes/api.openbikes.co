@@ -19,14 +19,22 @@ nginx:
 
 postgres-data:
   restart: "no"
-  image: postgres:9.4
+  image: mdillon/postgis:9.3
+  environment:
+    POSTGRES_USER: "postgres"
+    POSTGRES_PASSWORD: "postgres"
+    POSTGRES_HOST: "postgres"
   volumes:
     - /var/lib/postgresql
   command: "true"
 
 postgres:
   restart: always
-  image: postgres:9.4
+  image: mdillon/postgis:9.3
+  environment:
+    POSTGRES_USER: "postgres"
+    POSTGRES_PASSWORD: "postgres"
+    POSTGRES_HOST: "postgres"
   volumes_from:
     - postgres-data
   ports:

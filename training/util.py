@@ -13,7 +13,7 @@ def save_regressor(regressor, city, station):
     pickle file.
     '''
     directory = os.path.join(
-        app.config['REGRESSORS_FOLDER'],
+        os.environ.get('REGRESSORS_FOLDER'),
         city
     )
     if not os.path.exists(directory):
@@ -37,7 +37,7 @@ def save_regressor(regressor, city, station):
 def load_regressor(city, station):
     ''' Load a regressor in memory. '''
     path = os.path.join(
-        app.config['REGRESSORS_FOLDER'],
+        os.environ.get('REGRESSORS_FOLDER'),
         city,
         station.replace('/', '_')
     )
