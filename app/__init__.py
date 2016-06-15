@@ -9,7 +9,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='')
 
 # Configure the application
 app.config.from_object('app.config_common')

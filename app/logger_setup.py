@@ -38,7 +38,7 @@ from app import app
 # Set the logging level
 app.logger.setLevel(app.config['LOG_LEVEL'])
 
-tz = pytz.timezone('Europe/Paris')
+tz = pytz.timezone(app.config['TIMEZONE'])
 
 def add_fields(_, level, event_dict):
     ''' Add custom fields to each record. '''

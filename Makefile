@@ -7,9 +7,6 @@ PROJECT    := $(shell basename $(PWD))
 
 ## Commands
 
-all:
-	install
-
 ### Install dependencies
 install:
 	pip3 install -r requirements.txt
