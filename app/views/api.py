@@ -6,7 +6,6 @@ from app.exceptions import (
     CityInactive,
     CityUnpredicable,
     InvalidKind,
-    PastTimestamp,
     StationNotFound
 )
 
@@ -34,13 +33,12 @@ def api_countries():
     args = request.args
     # Check arguments are valid
     for arg in args:
-        if arg not in ('name', 'provider'):
+        if arg not in ('provider',):
             return jsonify({
                 'status': 'failure',
                 'message': "'{}' is not a valid parameter".format(arg)
             }), 400
     countries = list(srv.get_countries(
-        name=args.get('name'),
         provider=args.get('provider')
     ))
     return jsonify({
@@ -56,13 +54,12 @@ def api_providers():
     args = request.args
     # Check arguments are valid
     for arg in args:
-        if arg not in ('name', 'country'):
+        if arg not in ('country',):
             return jsonify({
                 'status': 'failure',
                 'message': "'{}' is not a valid parameter".format(arg)
             }), 400
     providers = list(srv.get_providers(
-        name=args.get('name'),
         country=args.get('country')
     ))
     return jsonify({
@@ -157,8 +154,8 @@ def api_forecast(city, station, kind, timestamp):
         response = srv.make_forecast(city, station, kind, timestamp)
         response['status'] = 'success'
         return jsonify(response), 200
-    except (PastTimestamp, InvalidKind, CityNotFound, StationNotFound,
-            CityInactive, CityUnpredicable) as exc:
+    except (InvalidKind, CityNotFound, StationNotFound, CityInactive,
+            CityUnpredicable) as exc:
         return jsonify(error(exc)), 404
 
 
@@ -194,8 +191,8 @@ def api_filtered_stations():
             'status': 'success',
             'stations': stations
         })
-    except (PastTimestamp, InvalidKind, CityNotFound, CityInactive,
-            CityUnpredicable, ValueError) as exc:
+    except (InvalidKind, CityNotFound, CityInactive, CityUnpredicable,
+            ValueError) as exc:
         return jsonify(error(exc)), 404
 
 

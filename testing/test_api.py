@@ -28,14 +28,14 @@ def test_api_countries_invalid_parameter():
 
 def test_api_countries_valid_parameters():
     ''' Check api_countries handles all valid parameters. '''
-    query = 'name=France&provider=jcdecaux'
+    query = 'provider=jcdecaux'
     rv = client.get('/api/countries', query_string=query)
     assert rv.status_code == 200
 
 
 def test_api_providers_valid_parameters():
     ''' Check api_providers handles all valid parameters. '''
-    query = 'name=jcdecaux&country=France'
+    query = 'country=France'
     rv = client.get('/api/providers', query_string=query)
     assert rv.status_code == 200
 
@@ -125,18 +125,6 @@ def test_api_forecast_invalid_kind():
         station='00003 - POMME',
         kind='xyz',
         timestamp=(dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    ))
-    assert rv.status_code == 404
-
-
-def test_api_forecast_invalid_timestamp():
-    ''' Check api_forecast handles invalid timestamp. '''
-    rv = client.get('/api/forecast/{city}/{station}/{kind}/{timestamp}'.format(
-        city='Toulouse',
-        station='00003 - POMME',
-        kind='bikes',
-        # Timestamp in the past
-        timestamp=(dt.datetime.now() - dt.timedelta(minutes=1)).timestamp()
     ))
     assert rv.status_code == 404
 

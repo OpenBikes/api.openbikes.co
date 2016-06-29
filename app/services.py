@@ -5,13 +5,11 @@ import datetime as dt
 
 from scipy.stats import norm
 
-from app import app
 from app.exceptions import (
     CityNotFound,
     CityInactive,
     CityUnpredicable,
     InvalidKind,
-    PastTimestamp,
     StationNotFound
 )
 from app import util
@@ -94,68 +92,44 @@ def geojson(city):
         raise CityNotFound("'{}' not found".format(city))
 
 
-def get_countries(name=None, provider=None, as_query=False):
+def get_countries(provider=None, as_query=False):
     '''
     Filter and return a dictionary or query of countries.
 
     Args:
-        name (str): A country name.
         provider (str): A data provider name.
 
     Returns:
         generator(dict) or query: The countries.
     '''
     # Restrict the returned fields
-    query = models.City.query.with_entities(
-        models.City.country,
-        models.City.provider
-    )
-
-    # Filter on the country name
-    if name:
-        query = query.filter_by(country=name)
+    query = models.City.query.distinct(models.City.country)
 
     # Filter on the data provider
     if provider:
         query = query.filter_by(provider=provider)
 
-    if as_query:
-        return query
-    else:
-        countries = query.all()
-        return (country._asdict() for country in countries)
+    return (city.country for city in query.all())
 
 
-def get_providers(name=None, country=None, as_query=False):
+def get_providers(country=None, as_query=False):
     '''
     Filter and return a dictionary or query of providers.
 
     Args:
-        name (str): A provider name.
         country (str): A country name.
 
     Returns:
         generator(dict) or query: The providers.
     '''
     # Restrict the returned fields
-    query = models.City.query.with_entities(
-        models.City.provider,
-        models.City.country
-    )
-
-    # Filter on the provider name
-    if name:
-        query = query.filter_by(provider=name)
+    query = models.City.query.distinct(models.City.provider)
 
     # Filter on the country name
     if country:
         query = query.filter_by(country=country)
 
-    if as_query:
-        return query
-    else:
-        providers = query.all()
-        return (provider._asdict() for provider in providers)
+    return (city.provider for city in query.all())
 
 
 def get_cities(name=None, slug=None, country=None, provider=None, predictable=None, active=None, as_query=False):
@@ -306,16 +280,12 @@ def make_forecast(city, station, kind, timestamp):
         dict: The forecast including the expected error.
 
     Raises:
-        PastTimestamp: The `timestamp` argument is in the past.
         InvalidKind: The `kind` argument is not equal to "bikes" nor to "spaces".
         CityNotFound: The city cannot be found.
         StationNotFound: The station cannot be found.
         CityInactive: The city is inactive.
         CityUnpredicable: Predictions cannot be made for the city.
     '''
-    # Timestamp is in the past
-    if timestamp < dt.datetime.now().timestamp():
-        raise PastTimestamp("'{}' is in the past".format(timestamp))
 
     # Kind is invalid
     if kind not in ('bikes', 'spaces'):
@@ -387,15 +357,11 @@ def filter_stations(city, lat, lon, limit, kind=None, mode=None,
         List(dict): The stations, ordered by distance but not by confidence.
 
     Raises:
-        PastTimestamp: The provided timestamp is in the past.
         ValueError: The first 4 arguments cannot be None. The limit has to be a
             positive integer. The mode has to be either driving, walking,
             bicycling or transit.
         CityNotFound: The city cannot be found.
     '''
-    # Verify the timestamp is not in the past
-    if timestamp is not None and timestamp < dt.datetime.now().timestamp():
-        raise PastTimestamp("'{}' is in the past".format(timestamp))
 
     # Verify necessary arguments are not None
     for arg in (city, lat, lon, limit):

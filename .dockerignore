@@ -1,1 +1,8 @@
 .git/
+*.pyc
+*.zip
+*.geojson
+*.db
+*.log
+config.py
+ngrok

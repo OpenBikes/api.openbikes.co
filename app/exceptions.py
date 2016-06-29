@@ -14,9 +14,5 @@ class StationNotFound(Exception):
     pass
 
 
-class PastTimestamp(Exception):
-    pass
-
-
 class InvalidKind(Exception):
     pass

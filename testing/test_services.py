@@ -11,7 +11,6 @@ from app.exceptions import (
     CityInactive,
     CityUnpredicable,
     StationNotFound,
-    PastTimestamp,
     InvalidKind
 )
 
@@ -29,29 +28,29 @@ def test_srv_geojson_success():
 
 
 def test_srv_get_countries_nil():
-    ''' Check get_countries service returns nothing with an invalid name. '''
-    countries = srv.get_countries(name='xyz')
+    ''' Check get_countries service returns nothing with an invalid parameter. '''
+    countries = srv.get_countries(provider='xyz')
     assert isinstance(countries, types.GeneratorType)
     assert len(list(countries)) == 0
 
 
 def test_srv_get_countries_all_params():
     ''' Check get_countries service works will all parameters. '''
-    countries = srv.get_countries(name='France', provider='jcdecaux')
+    countries = srv.get_countries(provider='jcdecaux')
     assert isinstance(countries, types.GeneratorType)
     assert len(list(countries)) == 1
 
 
 def test_srv_get_providers_nil():
-    ''' Check get_providers service returns nothing with an invalid name. '''
-    providers = srv.get_providers(name='xyz')
+    ''' Check get_providers service returns nothing with an invalid parameter. '''
+    providers = srv.get_providers(country='xyz')
     assert isinstance(providers, types.GeneratorType)
     assert len(list(providers)) == 0
 
 
 def test_srv_get_providers_all_params():
     ''' Check get_providers service works will all parameters. '''
-    providers = srv.get_providers(name='jcdecaux', country='France')
+    providers = srv.get_providers(country='France')
     assert isinstance(providers, types.GeneratorType)
     assert len(list(providers)) == 1
 
@@ -104,14 +103,6 @@ def test_srv_get_updates_all_cities():
     updates = srv.get_updates(city=None)
     assert isinstance(updates, types.GeneratorType)
     assert len(list(updates)) >= 1
-
-
-@raises(PastTimestamp)
-def test_srv_make_forecast_past_timestamp():
-    ''' Check make_forecast service raises exception on past timestamp. '''
-    past = (dt.datetime.now() - dt.timedelta(minutes=1)).timestamp()
-    srv.make_forecast(city='Toulouse', station='00003 - POMME', kind='bikes',
-                      timestamp=past)
 
 
 @raises(InvalidKind)
@@ -234,14 +225,6 @@ def test_srv_filter_stations_invalid_mode_value():
     future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
     srv.filter_stations('Toulouse', 43.6, 1.4333, 1, kind='bikes', mode='xyz',
                         timestamp=future, quantity=1, confidence=0.5)
-
-
-@raises(PastTimestamp)
-def test_srv_filter_stations_past_timestamp():
-    ''' Check filter_stations service raises exception on invalid mode value. '''
-    past = (dt.datetime.now() - dt.timedelta(minutes=1)).timestamp()
-    srv.filter_stations('Toulouse', 43.6, 1.4333, 1, kind='bikes', mode='walking',
-                        timestamp=past, quantity=1, confidence=0.5)
 
 
 @raises(ValueError)
