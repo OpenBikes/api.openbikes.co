@@ -56,6 +56,18 @@ docker-compose run web ./scripts/add-cities.sh
 - You can access the application on the host by accessing `docker-machine ip`
 - Access logs with `docker-compose logs`
 
+__For Makefile aficionados__ :
+
+```sh
+cd ~/path/to/api.openbikes.co/
+make docker.env
+make docker.build
+make docker.launch
+docker-compose run web make dev
+docker-compose run web python3 manage.py initdb
+docker-compose run web ./scripts/add-cities.sh
+```
+
 ### In production
 
 ## Running locally
