@@ -72,6 +72,7 @@ For those who want to use Docker but doesn't like to write virtualbox IP you can
 
 ```sh
 $ cat /etc/hosts
+
 ##
 # Host Database
 #
