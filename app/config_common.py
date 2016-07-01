@@ -17,8 +17,11 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{pwd}@{host}:{port}/{name}'.forma
 )
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 
+GEOJSON_FOLDER = 'collecting/geojson/'
+REGRESSORS_FOLDER = 'training/regressors/'
+
 TIMEZONE = 'Europe/Paris'
 
 # Logger settings
-LOG_MAXBYTES = 10e8 # 100 MB
+LOG_MAXBYTES = 10e8  # 100 MB
 LOG_BACKUPS = 3

@@ -8,12 +8,17 @@ from flask import Flask, request, session
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
+from app.util import try_keys
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 
 # Configure the application
 app.config.from_object('app.config_common')
 app.config.from_object('app.config')
+
+# Set global variables
+GEOJSON_FOLDER = try_keys(os.environ, ['GEOJSON_FOLDER'])
+REGRESSORS_FOLDER = try_keys(os.environ, ['REGRESSORS_FOLDER'])
 
 # Create an SQLAlchemy binding
 db = SQLAlchemy(app)
@@ -103,7 +108,7 @@ def after_cursor_execute(conn, cursor, statement, parameters, context, executema
 
 
 # Create the necessary folders if they don't exist
-if not os.path.exists(os.environ.get('GEOJSON_FOLDER')):
-    os.makedirs(os.environ.get('GEOJSON_FOLDER'))
-if not os.path.exists(os.environ.get('REGRESSORS_FOLDER')):
-    os.makedirs(os.environ.get('REGRESSORS_FOLDER'))
+if not os.path.exists(GEOJSON_FOLDER):
+    os.makedirs(GEOJSON_FOLDER)
+if not os.path.exists(REGRESSORS_FOLDER):
+    os.makedirs(REGRESSORS_FOLDER)

@@ -183,7 +183,8 @@ def api_filtered_stations():
             limit=int(args['limit']) if args.get('limit') else None,
             kind=args.get('kind'),
             mode=args.get('mode'),
-            timestamp=float(args['timestamp']) if args.get('timestamp') else None,
+            timestamp=float(args['timestamp']) if args.get(
+                'timestamp') else None,
             quantity=int(args['quantity']) if args.get('quantity') else None,
             confidence=0.95,
         )

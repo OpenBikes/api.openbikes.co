@@ -6,15 +6,16 @@ from app import app
 from app import models
 from app import services as srv
 from app import util
+from app.util import timethisfunc
 from app.database import init_db, drop_db, db_session
 from collecting import collect
 from collecting import google
-
 
 manager = Manager(app)
 
 
 manager.add_command('runserver', Server())
+
 
 def make_shell_context():
     return dict(app=app)
@@ -38,6 +39,7 @@ def dropdb():
         print(colored('The SQL database has been deleted', 'green'))
 
 
+@timethisfunc
 @manager.option('-f', dest='provider', help='API provider script name')
 @manager.option('-c', dest='city', help='City name')
 @manager.option('-a', dest='city_api', help='City API name')

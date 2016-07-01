@@ -97,6 +97,7 @@ Because we scientific libraries for doing machine learning, we recommend using [
 cd ~/path/to/api.openbikes.co/
 conda create -n venv python=3.4 anaconda
 source activate venv
+make install
 ```
 
 ### Install MongoDB
