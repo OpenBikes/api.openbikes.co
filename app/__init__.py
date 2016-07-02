@@ -8,7 +8,6 @@ from flask import Flask, request, session
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
-from app.util import try_keys
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 
@@ -17,8 +16,8 @@ app.config.from_object('app.config_common')
 app.config.from_object('app.config')
 
 # Set global variables
-GEOJSON_FOLDER = try_keys(os.environ, ['GEOJSON_FOLDER'])
-REGRESSORS_FOLDER = try_keys(os.environ, ['REGRESSORS_FOLDER'])
+GEOJSON_FOLDER = os.environ.get('GEOJSON_FOLDER')
+REGRESSORS_FOLDER = os.environ.get('REGRESSORS_FOLDER')
 
 # Create an SQLAlchemy binding
 db = SQLAlchemy(app)

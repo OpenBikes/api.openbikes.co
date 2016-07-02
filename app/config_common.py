@@ -1,7 +1,6 @@
 import os
 
 from dotenv import load_dotenv
-from app.util import try_keys
 
 load_dotenv('.env')
 
@@ -9,11 +8,11 @@ load_dotenv('.env')
 SECRET_KEY = os.environ.get('APP_SECRET') or 'houdini'
 
 # Postges credentials
-POSTGRES_USER = try_keys(os.environ, ['POSTGRES_USER'], 'postgres')
-POSTGRES_PASS = try_keys(os.environ, ['POSTGRES_PASS'], 'postgres')
-POSTGRES_HOST = try_keys(os.environ, ['POSTGRES_HOST'], 'postgres')
-POSTGRES_PORT = try_keys(os.environ, ['POSTGRES_PORT'], 5433)
-POSTGRES_DBNAME = try_keys(os.environ, ['POSTGRES_DBNAME'], 'openbikes')
+POSTGRES_USER = os.environ.get('POSTGRES_USER', 'postgres')
+POSTGRES_PASS = os.environ.get('POSTGRES_PASS', 'postgres')
+POSTGRES_HOST = os.environ.get('POSTGRES_HOST', 'postgres')
+POSTGRES_PORT = os.environ.get('POSTGRES_PORT', 5433)
+POSTGRES_DBNAME = os.environ.get('POSTGRES_DBNAME', 'openbikes')
 
 # Postgres connexion
 SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{pwd}@{host}:{port}/{name}'.format(
@@ -24,10 +23,10 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{pwd}@{host}:{port}/{name}'.forma
     name=POSTGRES_DBNAME
 )
 
-SQLALCHEMY_TRACK_MODIFICATIONS = os.environ.get('SQLALCHEMY_TRACK_MODIFICATIONS') or True
+SQLALCHEMY_TRACK_MODIFICATIONS = os.environ.get('SQLALCHEMY_TRACK_MODIFICATIONS', True)
 
-GEOJSON_FOLDER = try_keys(os.environ, ['GEOJSON_FOLDER'], 'collecting/geojson/')
-REGRESSORS_FOLDER = try_keys(os.environ, ['REGRESSORS_FOLDER'], 'training/regressors/')
+GEOJSON_FOLDER = os.environ.get('GEOJSON_FOLDER', 'collecting/geojson/')
+REGRESSORS_FOLDER = os.environ.get('REGRESSORS_FOLDER', 'training/regressors/')
 
 TIMEZONE = 'Europe/Paris'
 
