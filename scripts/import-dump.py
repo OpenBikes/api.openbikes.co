@@ -11,16 +11,15 @@ database.
 This script can be run from any directory.
 '''
 
-import subprocess
-import time
 import argparse
 import datetime as dt
+import subprocess
+import time
 
 from pymongo import MongoClient
 from termcolor import colored
 
 parser = argparse.ArgumentParser()
-
 parser.add_argument('city', type=str, help='City for which to import data')
 parameters = parser.parse_args()
 city = parameters.city

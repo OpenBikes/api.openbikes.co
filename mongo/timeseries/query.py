@@ -1,9 +1,3 @@
-from datetime import datetime
-
-import pandas as pd
-
-from mongo.timeseries import db
-
 '''
 'u': updates
 'i': information
@@ -11,6 +5,13 @@ from mongo.timeseries import db
 'b': available bikes
 's': available stands
 '''
+
+from datetime import datetime
+
+import pandas as pd
+
+from mongo.timeseries import db
+
 
 def rename_columns(dataframe):
     '''
