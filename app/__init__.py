@@ -15,6 +15,10 @@ app = Flask(__name__, static_folder='static', static_url_path='')
 app.config.from_object('app.config_common')
 app.config.from_object('app.config')
 
+# Set global variables
+GEOJSON_FOLDER = os.environ.get('GEOJSON_FOLDER')
+REGRESSORS_FOLDER = os.environ.get('REGRESSORS_FOLDER')
+
 # Create an SQLAlchemy binding
 db = SQLAlchemy(app)
 
@@ -103,7 +107,7 @@ def after_cursor_execute(conn, cursor, statement, parameters, context, executema
 
 
 # Create the necessary folders if they don't exist
-if not os.path.exists(os.environ.get('GEOJSON_FOLDER')):
-    os.makedirs(os.environ.get('GEOJSON_FOLDER'))
-if not os.path.exists(os.environ.get('REGRESSORS_FOLDER')):
-    os.makedirs(os.environ.get('REGRESSORS_FOLDER'))
+if not os.path.exists(GEOJSON_FOLDER):
+    os.makedirs(GEOJSON_FOLDER)
+if not os.path.exists(REGRESSORS_FOLDER):
+    os.makedirs(REGRESSORS_FOLDER)

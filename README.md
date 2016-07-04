@@ -56,6 +56,35 @@ docker-compose run web ./scripts/add-cities.sh
 - You can access the application on the host by accessing `docker-machine ip`
 - Access logs with `docker-compose logs`
 
+__For Makefile aficionados__ :
+
+```sh
+cd ~/path/to/api.openbikes.co/
+make docker.env
+make docker.build
+make docker.launch
+docker-compose run web make dev
+docker-compose run web python3 manage.py initdb
+docker-compose run web ./scripts/add-cities.sh
+```
+
+For those who want to use Docker but doesn't like to write virtualbox IP you can update `/etc/hosts/` by adding a new alias for __`docker-env`__ :
+
+```sh
+$ cat /etc/hosts
+
+##
+# Host Database
+#
+# localhost is used to configure the loopback interface
+# when the system is booting.  Do not change this entry.
+##
+127.0.0.1       localhost
+255.255.255.255 broadcasthost
+::1             localhost
+xxx.xxx.xx.xxx  docker-dev
+```
+
 ### In production
 
 ## Running locally
@@ -68,6 +97,7 @@ Because we scientific libraries for doing machine learning, we recommend using [
 cd ~/path/to/api.openbikes.co/
 conda create -n venv python=3.4 anaconda
 source activate venv
+make install
 ```
 
 ### Install MongoDB

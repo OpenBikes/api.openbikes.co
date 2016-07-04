@@ -1,5 +1,6 @@
 import re
 from string import punctuation
+import time
 from unidecode import unidecode
 
 
@@ -32,3 +33,12 @@ def slugify(string):
     # Remove trailing hyphens
     string = string.strip('-')
     return string
+
+
+def timethisfunc(func):
+    def wrapper(*arg, **kw):
+        t1 = time.time()
+        res = func(*arg, **kw)
+        t2 = time.time()
+        return (t2 - t1), res, func.__name__
+    return wrapper

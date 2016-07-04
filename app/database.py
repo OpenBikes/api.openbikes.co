@@ -5,7 +5,6 @@ import sqlalchemy.exc
 from app import app
 from app import db
 
-
 engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'],
                        echo=app.config['DATABASE_ECHO'])
 
@@ -21,7 +20,8 @@ def init_db():
     name = uri[-1]
     with contextlib.suppress(sqlalchemy.exc.ProgrammingError):
         with create_engine(url, isolation_level='AUTOCOMMIT').connect() as conn:
-            conn.execute("CREATE DATABASE {} WITH encoding='utf-8'".format(name))
+            conn.execute(
+                "CREATE DATABASE {} WITH encoding='utf-8'".format(name))
     # Add postgis extension
     try:
         db_session.execute('CREATE EXTENSION postgis')
