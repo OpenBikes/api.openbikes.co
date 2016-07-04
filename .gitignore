@@ -3,6 +3,7 @@
 *.geojson
 *.db
 *.log
+*.csv
 .env
 config.py
 ngrok
