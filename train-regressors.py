@@ -52,7 +52,7 @@ def optimize(regressor, training):
     df = munging.prepare(data)
     best = {
         'moment': now,
-        'backward': None,
+        'backward': training.backward,
         'score': np.inf
     }
     # Go through all the possible backward/forward combinations
@@ -115,5 +115,8 @@ def train(station):
                         station.city.slug,
                         station.slug)
 
-for station in models.Station.query:
+
+stations = models.Station.query
+
+for station in stations:
     train(station)

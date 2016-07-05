@@ -16,7 +16,6 @@ JCDECAUX_API_KEY=https://developer.jcdecaux.com/#/opendata/vls?page=getstarted
 KEOLIS_API_KEY=https://data.keolis-rennes.com/fr/accueil.html
 LACUB_API_KEY=http://data.bordeaux-metropole.fr/apicub
 
-GEOJSON_FOLDER=collecting/geojson/
 REGRESSORS_FOLDER=training/regressors/
 
 MONGO_HOST=mongo
@@ -53,7 +52,7 @@ docker-compose run web ./scripts/add-cities.sh
 - Run `docker-machine start dev` to boot up the dev container the next time you want to use it.
 - If you encounter a problem then you can `docker-machine rm dev` and start again.
 - A good internet connection makes the process painless.
-- You can access the application on the host by accessing `docker-machine ip`
+- You can access the application on the host by accessing `docker-machine ip dev`
 - Access logs with `docker-compose logs`
 
 __For Makefile aficionados__ :
@@ -68,7 +67,7 @@ docker-compose run web python3 manage.py initdb
 docker-compose run web ./scripts/add-cities.sh
 ```
 
-For those who want to use Docker but doesn't like to write virtualbox IP you can update `/etc/hosts/` by adding a new alias for __`docker-env`__ :
+For those who want to use Docker but don't like to type out VirtualBox IP you can update `/etc/hosts/` by adding a new alias for __`docker-env`__ :
 
 ```sh
 $ cat /etc/hosts

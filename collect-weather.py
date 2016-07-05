@@ -19,10 +19,10 @@ def fetch_data(city):
     insert_weather.city(city.name, weather)
 
 
-query = models.City.query.filter_by(active=True, predictable=True)
-cities = query.all()
+cities = models.City.query.filter_by(active=True, predictable=True)
 
-[fetch_data(city) for city in cities]
+for city in cities:
+    fetch_data(city)
 
 #from joblib import Parallel, delayed
 #Parallel(n_jobs=2)(delayed(fetch_data)(city) for city in cities)

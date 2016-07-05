@@ -1,6 +1,5 @@
-import os
-
 from pymongo import MongoClient
 
-client = MongoClient(os.environ.get('MONGO_HOST'),
-                     int(os.environ.get('MONGO_PORT')))
+from app import app
+
+client = MongoClient(app.config['MONGO_HOST'], app.config['MONGO_PORT'])

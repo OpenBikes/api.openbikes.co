@@ -5,6 +5,7 @@ import datetime as dt
 
 from scipy.stats import norm
 
+from app import app
 from app.exceptions import (
     CityNotFound,
     CityInactive,
@@ -71,7 +72,7 @@ def insert_stations(city_id, stations, altitudes):
         return False
 
 
-def geojson(city):
+def geojson(city_name):
     '''
     Open and return the latest geojson file of a city as a dictionary.
 
@@ -84,10 +85,9 @@ def geojson(city):
     Raises:
         CityNotFound: The geojson file cannot be found.
     '''
-    path = os.path.join(os.environ.get('GEOJSON_FOLDER'), '{}.geojson'.format(city))
     try:
-        with open(path, 'r') as infile:
-            return json.loads(infile.read())
+        city = models.City.query.filter_by(name=city_name).first()
+        return city.geojson
     except:
         raise CityNotFound("'{}' not found".format(city))
 
@@ -187,8 +187,7 @@ def get_cities(name=None, slug=None, country=None, provider=None, predictable=No
     if as_query:
         return query
     else:
-        cities = query.all()
-        return (city._asdict() for city in cities)
+        return (city._asdict() for city in query.all())
 
 
 def get_stations(name=None, slug=None, city=None, as_query=False):
@@ -228,11 +227,10 @@ def get_stations(name=None, slug=None, city=None, as_query=False):
     if as_query:
         return query
     else:
-        stations = query.all()
-        return (station._asdict() for station in stations)
+        return (station._asdict() for station in query.all())
 
 
-def get_updates(city=None):
+def get_updates(city=None, as_query=False):
     '''
     Return the latest update time for one or more cities.
 
@@ -245,25 +243,20 @@ def get_updates(city=None):
     Raises:
         CityNotFound: The city cannot be found.
     '''
-    token = '*' if city is None else city
-
-    # Get the information on all the geojson files
-    geojson_files = glob.glob('{0}/{1}.geojson'.format(
-        os.environ.get('GEOJSON_FOLDER'),
-        token
-    ))
-    if len(geojson_files) == 0:
-        raise CityNotFound("'{}' not found".format(city))
-
-    # Get the edit time of each geojson file
-    results = (
-        {
-            'city': geojson.split('/')[-1].split('.')[0],
-            'update': os.path.getmtime(geojson)
-        }
-        for geojson in geojson_files
+    query = models.City.query.with_entities(
+        models.City.name,
+        models.City.slug,
+        models.City.update
     )
-    return results
+
+    # Filter on the city name
+    if city:
+        query = query.filter_by(name=city)
+
+    if as_query:
+        return query
+    else:
+        return (city._asdict() for city in query.all())
 
 
 def make_forecast(city, station, kind, timestamp):
@@ -445,3 +438,21 @@ def find_closest_city(lat, lon, as_object=False):
         return city
     else:
         return city._asdict()
+
+
+def get_metrics():
+    '''
+    Returns useful metrics.
+
+    Returns:
+        (int): The number of providers.
+        (int): The number of countries.
+        (int): The number of cities.
+        (int): The number of stations.
+    '''
+    nbr_providers = sum(1 for _ in get_providers())
+    nbr_countries = sum(1 for _ in get_countries())
+    nbr_cities = sum(1 for _ in get_cities())
+    nbr_stations = sum(1 for _ in get_stations())
+
+    return nbr_providers, nbr_countries, nbr_cities, nbr_stations

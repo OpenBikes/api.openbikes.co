@@ -44,8 +44,11 @@ def add_fields(_, level, event_dict):
     ''' Add custom fields to each record. '''
     now = dt.datetime.now()
     event_dict['timestamp'] = tz.localize(now, True).astimezone(pytz.utc).isoformat()
-    event_dict['session_id'] = session.get('session_id')
     event_dict['level'] = level
+
+    if session:
+        event_dict['session_id'] = session.get('session_id')
+
     return event_dict
 
 # Add a handler to write log messages to a file

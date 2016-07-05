@@ -1,12 +1,13 @@
 import math
 
+from geoalchemy2 import Geometry
+import pandas as pd
 from sqlalchemy import (
     Column, Integer, String, Boolean, DateTime, Float, ForeignKey,
     CheckConstraint
 )
 from sqlalchemy.orm import relationship
-from geoalchemy2 import Geometry
-import pandas as pd
+from sqlalchemy_utils import JSONType
 
 from app.database import Model
 from training import util
@@ -18,6 +19,7 @@ class City(Model):
 
     active = Column(Boolean, nullable=False, index=True)
     country = Column(String, nullable=False, index=True)
+    geojson = Column(JSONType, nullable=False)
     id = Column(Integer, primary_key=True, autoincrement=True)
     latitude = Column(Float, nullable=False, index=True)
     longitude = Column(Float, nullable=False, index=True)
@@ -28,6 +30,7 @@ class City(Model):
     predictable = Column(Boolean, nullable=False, index=True)
     provider = Column(String, nullable=False, index=True)
     slug = Column(String, nullable=False, index=True)
+    update = Column(DateTime, nullable=False, index=True)
 
     stations = relationship('Station', back_populates='city')
 

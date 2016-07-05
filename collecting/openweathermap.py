@@ -1,7 +1,8 @@
 import datetime as dt
-import os
 
 import requests
+
+from app import app
 
 
 def current(city):
@@ -13,7 +14,7 @@ def current(city):
     payload = {
         'q': city,
         'units': 'metric',
-        'APPID': os.environ.get('OPEN_WEATHER_MAP_API_KEY')
+        'APPID': app.config['OPEN_WEATHER_MAP_API_KEY']
     }
     response = requests.get(
         'http://api.openweathermap.org/data/2.5/weather',

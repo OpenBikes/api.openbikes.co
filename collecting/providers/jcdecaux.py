@@ -1,12 +1,11 @@
-import os
-
 import requests
 
+from app import app
 from collecting import util
 
 
 def stations(city):
-    payload = {'contract': city, 'apiKey': os.environ.get('JCDECAUX_API_KEY')}
+    payload = {'contract': city, 'apiKey': app.config['JCDECAUX_API_KEY']}
     response = requests.get(
         'https://api.jcdecaux.com/vls/v1/stations',
         params=payload

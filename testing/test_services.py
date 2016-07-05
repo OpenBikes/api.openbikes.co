@@ -85,12 +85,6 @@ def test_srv_get_stations_all_params():
     assert len(list(stations)) == 1
 
 
-@raises(CityNotFound)
-def test_srv_get_updates_city_not_found():
-    ''' Check get_updates service raises exception with an invalid city. '''
-    srv.get_updates(city='xyz')
-
-
 def test_srv_updates_one_city():
     ''' Check get_updates service works for one city. '''
     updates = srv.get_updates(city='Toulouse')
@@ -248,3 +242,12 @@ def test_srv_find_closest_city():
     ''' Check find_closest_city service works. '''
     city = srv.find_closest_city(43.6, 1.4333)
     assert city['name'] == 'Toulouse'
+
+
+def test_srv_get_metrics():
+    ''' Check get_metrics service works. '''
+    nbr_providers, nbr_countries, nbr_cities, nbr_stations = srv.get_metrics()
+    assert isinstance(nbr_providers, int)
+    assert isinstance(nbr_countries, int)
+    assert isinstance(nbr_cities, int)
+    assert isinstance(nbr_stations, int)

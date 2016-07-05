@@ -203,3 +203,17 @@ def api_closest_city(latitude, longitude):
     response = srv.find_closest_city(latitude, longitude)
     response['status'] = 'success'
     return jsonify(response), 200
+
+
+@API_BP.route('/metrics', methods=['GET'])
+def api_metrics():
+    ''' Returns latest metrics. '''
+    nbr_providers, nbr_countries, nbr_cities, nbr_stations = srv.get_metrics()
+    response = {
+        'providers': nbr_providers,
+        'countries': nbr_countries,
+        'cities': nbr_cities,
+        'stations': nbr_stations
+    }
+    response['status'] = 'success'
+    return jsonify(response), 200

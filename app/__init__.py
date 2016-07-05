@@ -15,12 +15,10 @@ app = Flask(__name__, static_folder='static', static_url_path='')
 app.config.from_object('app.config_common')
 app.config.from_object('app.config')
 
-# Set global variables
-GEOJSON_FOLDER = os.environ.get('GEOJSON_FOLDER')
-REGRESSORS_FOLDER = os.environ.get('REGRESSORS_FOLDER')
 
 # Create an SQLAlchemy binding
 db = SQLAlchemy(app)
+
 
 # Add the top level to the import path
 sys.path.append('..')
@@ -65,8 +63,9 @@ def before_request():
             data = request.data
 
     # Log the request with the attached args and body data
-    logger.info(u'HTTP request',
+    logger.info('HTTP request',
                 method=request.method,
+                endpoint=request.endpoint,
                 path=request.path,
                 args=request.args,
                 data=data)
@@ -76,11 +75,11 @@ def before_request():
 def measure_elapsed_time(response):
     elapsed_time = time.time() - request.start_time
     if elapsed_time > 0.2:
-        logger.warning('Slow request',
-                       endpoint=request.endpoint,
-                       duration=elapsed_time,
-                       queries_count=request.queries_count,
-                       queries_duration='{:.3f}'.format(request.queries_duration))
+        log = logger.new(endpoint=request.endpoint, duration=elapsed_time)
+        if hasattr(request, 'queries_count'):
+            log = log.bind(queries_count=request.queries_count)
+            log = log.bind(queries_duration=request.queries_duration)
+        log.warning('Slow request')
     return response
 
 
@@ -107,7 +106,5 @@ def after_cursor_execute(conn, cursor, statement, parameters, context, executema
 
 
 # Create the necessary folders if they don't exist
-if not os.path.exists(GEOJSON_FOLDER):
-    os.makedirs(GEOJSON_FOLDER)
-if not os.path.exists(REGRESSORS_FOLDER):
-    os.makedirs(REGRESSORS_FOLDER)
+if not os.path.exists(app.config['REGRESSORS_FOLDER']):
+    os.makedirs(app.config['REGRESSORS_FOLDER'])

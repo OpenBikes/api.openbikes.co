@@ -1,3 +1,5 @@
+import datetime as dt
+
 from flask.ext.script import Manager, prompt_bool, Shell, Server
 import numpy as np
 from termcolor import colored
@@ -70,6 +72,7 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
     new_city = models.City(
         active=True,
         country=country,
+        geojson=stations,
         latitude=mean_lat,
         longitude=mean_lon,
         name=city,
@@ -78,7 +81,8 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
         position='POINT({0} {1})'.format(mean_lat, mean_lon),
         predictable=predictable,
         provider=provider,
-        slug=util.slugify(city)
+        slug=util.slugify(city),
+        update=dt.datetime.now()
     )
     db_session.add(new_city)
     db_session.commit()

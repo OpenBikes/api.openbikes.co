@@ -22,7 +22,7 @@ python3 manage.py addcity -f jcdecaux -c Sevilla -a Seville -o "Seville, Spain" 
 python3 manage.py addcity -f jcdecaux -c Stockholm -a Stockholm -o "Stockholm, SE" -p Sweden -e 1
 python3 manage.py addcity -f jcdecaux -c Toulouse -a Toulouse -o "Toulouse, FR" -p France -e 1
 python3 manage.py addcity -f jcdecaux -c Toyama -a Toyama -o "Toyama-shi, JP" -p Japan -e 1
-python3 manage.py addcity -f jcdecaux -c Valencia -a Valence -o "Valencia, ES" -p Japan -e 1
+python3 manage.py addcity -f jcdecaux -c Valencia -a Valence -o "Valencia, ES" -p Spain -e 1
 python3 manage.py addcity -f jcdecaux -c Vilnius -a Vilnius -o "Vilnius, LT" -p Lithuania -e 1
 
 python3 manage.py addcity -f citibike -c New-York -a New-York -o "New York, United States of America" -p USA -e 1

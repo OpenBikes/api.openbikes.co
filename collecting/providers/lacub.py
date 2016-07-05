@@ -1,14 +1,13 @@
-import os
-
 import requests
 
+from app import app
 from collecting import util
 
 
 def stations(city):
     # The city parameter is necessary so that everything work
     payload = {
-        'key': os.environ.get('LACUB_API_KEY'),
+        'key': app.config['LACUB_API_KEY'],
         'SERVICE': 'WFS',
         'VERSION': '1.1.0',
         'REQUEST': 'GetFeature',

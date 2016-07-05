@@ -84,12 +84,6 @@ def test_api_updates_all():
     assert rv.status_code == 200
 
 
-def test_api_updates_invalid_city():
-    ''' Check api_updates handles invalid city. '''
-    rv = client.get('/api/updates', query_string='city=xyz')
-    assert rv.status_code == 404
-
-
 def test_api_updates_valid_city():
     ''' Check api_updates handles valid city. '''
     rv = client.get('/api/updates', query_string='city=Toulouse')
