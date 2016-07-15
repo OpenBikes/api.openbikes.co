@@ -36,6 +36,8 @@ Install the [Docker toolbox](https://www.docker.com/products/docker-toolbox) and
 
 ### In development
 
+[Tutorial](https://realpython.com/blog/python/dockerizing-flask-with-compose-and-machine-from-localhost-to-the-cloud/)
+
 ```sh
 cd ~/path/to/api.openbikes.co/
 docker-machine create -d virtualbox --virtualbox-memory 512 --virtualbox-cpu-count 1 dev
@@ -54,37 +56,23 @@ docker-compose run web ./scripts/add-cities.sh
 - A good internet connection makes the process painless.
 - You can access the application on the host by accessing `docker-machine ip dev`
 - Access logs with `docker-compose logs`
+- Start the cron jobs with `service cron start` after having logged into the container with `docker-compose run web /bin/sh`
 
-__For Makefile aficionados__ :
+### In production
+
+[Tutorial](https://docs.docker.com/machine/examples/ocean/)
 
 ```sh
 cd ~/path/to/api.openbikes.co/
-make docker.env
-make docker.build
-make docker.launch
-docker-compose run web make dev
+docker-machine create --driver digitalocean --digitalocean-access-token <DIGITAL_OCEAN_TOKEN> --digitalocean-size "2gb" --digitalocean-region "FRA1" prod
+docker-machine env prod
+eval "$(docker-machine env prod)"
+docker-compose build
+docker-compose up -d
+docker-compose run web make prod
 docker-compose run web python3 manage.py initdb
 docker-compose run web ./scripts/add-cities.sh
 ```
-
-For those who want to use Docker but don't like to type out VirtualBox IP you can update `/etc/hosts/` by adding a new alias for __`docker-env`__ :
-
-```sh
-$ cat /etc/hosts
-
-##
-# Host Database
-#
-# localhost is used to configure the loopback interface
-# when the system is booting.  Do not change this entry.
-##
-127.0.0.1       localhost
-255.255.255.255 broadcasthost
-::1             localhost
-xxx.xxx.xx.xxx  docker-dev
-```
-
-### In production
 
 ## Running locally
 
@@ -123,4 +111,5 @@ python3 manage.py runserver
 - `python3 collect-bikes.py` to get current biking data.
 - `python3 collect-weather.py` to get current weather data.
 - `python3 train-regressors.py` to train regressors.
-- `./scripts/import-dump.sh <city>` to fetch and load a dump from the production server for the given city.
+- `python3 scripts/import-dump.py <city>` to fetch and load a dump from the production server for the given city.
+- `python3 scripts/create-dataset.py <city>` to create a dataset containing positions, weather and biking data for the given city.

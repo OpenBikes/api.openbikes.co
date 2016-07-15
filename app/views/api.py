@@ -17,9 +17,13 @@ API_BP = Blueprint('apibp', __name__, url_prefix='/api')
 def api_geojson(city):
     ''' Return the latest geojson file of a city. '''
     try:
-        response = srv.geojson(city)
-        response['status'] = 'success'
-        return jsonify(response), 200
+        geojson, update = srv.geojson(city)
+        try:
+            geojson['update'] = update.isoformat()
+            geojson['status'] = 'success'
+        except TypeError:
+            pass
+        return jsonify(geojson), 200
     except CityNotFound as exc:
         return jsonify({
             'status': 'failure',
@@ -131,6 +135,10 @@ def api_updates():
             }), 400
     try:
         updates = list(srv.get_updates(args.get('city')))
+
+        for i in range(len(updates)):
+            updates[i]['update'] = updates[i]['update'].isoformat()
+
         return jsonify({
             'status': 'success',
             'updates': updates,
@@ -205,15 +213,26 @@ def api_closest_city(latitude, longitude):
     return jsonify(response), 200
 
 
+@API_BP.route('/closest_station/<float:latitude>/<float:longitude>', methods=['GET'])
+def api_closest_station(latitude, longitude):
+    ''' Return the closest station for a given latitude and longitude. '''
+    response = srv.find_closest_station(latitude, longitude)
+    response['status'] = 'success'
+    return jsonify(response), 200
+
+
 @API_BP.route('/metrics', methods=['GET'])
 def api_metrics():
     ''' Returns latest metrics. '''
     nbr_providers, nbr_countries, nbr_cities, nbr_stations = srv.get_metrics()
-    response = {
-        'providers': nbr_providers,
-        'countries': nbr_countries,
-        'cities': nbr_cities,
-        'stations': nbr_stations
-    }
-    response['status'] = 'success'
-    return jsonify(response), 200
+    try:
+        response = {
+            'providers': nbr_providers,
+            'countries': nbr_countries,
+            'cities': nbr_cities,
+            'stations': nbr_stations,
+            'status': 'success'
+        }
+        return jsonify(response), 200
+    except:
+        return jsonify({'status': 'failure'}), 404

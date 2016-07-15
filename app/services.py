@@ -1,11 +1,7 @@
-import os
-import glob
-import json
 import datetime as dt
 
 from scipy.stats import norm
 
-from app import app
 from app.exceptions import (
     CityNotFound,
     CityInactive,
@@ -19,14 +15,14 @@ from app.database import db_session
 from collecting import google
 
 
-def insert_stations(city_id, stations, altitudes):
+def insert_stations(city, stations, altitudes):
     '''
     Insert stations and training schedules into the database.
 
     Args:
-        city (str): A city identifier (the primary key in the database) which
-            will be used as a foreign key to link the station to it's belonging
-            city.
+        city (models.City): A city identifier (the primary key in the database)
+            which will be used as a foreign key to link the station to it's
+            belonging city.
         stations (list of dicts): A list of dictionaries containing information
             relative to each station. The expected format is:
                 {
@@ -44,32 +40,29 @@ def insert_stations(city_id, stations, altitudes):
     Returns:
         boolean: An indicator to make sure the insertions took place.
     '''
-    try:
-        for station, altitude in zip(stations, altitudes):
-            new_station = models.Station(
-                altitude=altitude['elevation'],
-                city_id=city_id,
-                docks=station['bikes'] + station['stands'],
-                latitude=station['latitude'],
-                longitude=station['longitude'],
-                name=station['name'],
-                position='POINT({0} {1})'.format(station['latitude'], station['longitude']),
-                slug=util.slugify(station['name'])
-            )
-            db_session.add(new_station)
-            db_session.flush()
-            db_session.add(models.Training(
-                backward=7,
-                error=99,
-                forward=7,
-                moment=dt.datetime.now(),
-                station_id=new_station.id
-            ))
-        db_session.commit()
-        return True
-    except:
-        db_session.rollback()
-        return False
+    for station, altitude in zip(stations, altitudes):
+        new_station = models.Station(
+            altitude=altitude['elevation'],
+            city_id=city.id,
+            docks=station['bikes'] + station['stands'],
+            latitude=altitude['location']['lat'],
+            longitude=altitude['location']['lng'],
+            name=station['name'],
+            position='POINT({0} {1})'.format(altitude['location']['lat'],
+                                             altitude['location']['lng']),
+            slug=util.slugify(station['name'])
+        )
+        db_session.add(new_station)
+        db_session.flush()
+        db_session.add(models.Training(
+            backward=7,
+            error=99,
+            forward=7,
+            moment=dt.datetime.now(),
+            station_id=new_station.id
+        ))
+    db_session.commit()
+    return True
 
 
 def geojson(city_name):
@@ -81,18 +74,19 @@ def geojson(city_name):
 
     Returns:
         dict: The latest geojson file.
+        datetime: The time of most recent update.
 
     Raises:
         CityNotFound: The geojson file cannot be found.
     '''
     try:
         city = models.City.query.filter_by(name=city_name).first()
-        return city.geojson
+        return city.geojson, city.update
     except:
-        raise CityNotFound("'{}' not found".format(city))
+        raise CityNotFound("'{}' not found".format(city_name))
 
 
-def get_countries(provider=None, as_query=False):
+def get_countries(provider=None):
     '''
     Filter and return a dictionary or query of countries.
 
@@ -112,7 +106,7 @@ def get_countries(provider=None, as_query=False):
     return (city.country for city in query.all())
 
 
-def get_providers(country=None, as_query=False):
+def get_providers(country=None):
     '''
     Filter and return a dictionary or query of providers.
 
@@ -132,7 +126,13 @@ def get_providers(country=None, as_query=False):
     return (city.provider for city in query.all())
 
 
-def get_cities(name=None, slug=None, country=None, provider=None, predictable=None, active=None, as_query=False):
+def get_cities(name=None,
+               slug=None,
+               country=None,
+               provider=None,
+               predictable=False,
+               active=False,
+               as_query=False):
     '''
     Filter and return a dictionary or query of cities.
 
@@ -149,16 +149,7 @@ def get_cities(name=None, slug=None, country=None, provider=None, predictable=No
         generator(dict) or query: The cities.
     '''
     # Restrict the returned fields
-    query = models.City.query.with_entities(
-        models.City.active,
-        models.City.country,
-        models.City.latitude,
-        models.City.longitude,
-        models.City.name,
-        models.City.predictable,
-        models.City.provider,
-        models.City.slug
-    )
+    query = models.City.query
 
     # Filter on the city name
     if name:
@@ -187,7 +178,16 @@ def get_cities(name=None, slug=None, country=None, provider=None, predictable=No
     if as_query:
         return query
     else:
-        return (city._asdict() for city in query.all())
+        return ({
+            'active': city.active,
+            'country': city.country,
+            'latitude': city.latitude,
+            'longitude': city.longitude,
+            'name': city.name,
+            'predictable': city.predictable,
+            'provider': city.provider,
+            'slug': city.slug
+        } for city in query)
 
 
 def get_stations(name=None, slug=None, city=None, as_query=False):
@@ -204,13 +204,7 @@ def get_stations(name=None, slug=None, city=None, as_query=False):
         generator(dict) or query: The stations.
     '''
     # Restrict the returned fields
-    query = models.Station.query.with_entities(
-        models.Station.altitude,
-        models.Station.latitude,
-        models.Station.longitude,
-        models.Station.name,
-        models.Station.slug
-    )
+    query = models.Station.query
 
     # Filter on the station name
     if name:
@@ -227,7 +221,14 @@ def get_stations(name=None, slug=None, city=None, as_query=False):
     if as_query:
         return query
     else:
-        return (station._asdict() for station in query.all())
+        return ({
+            'altitude': station.altitude,
+            'docks': station.docks,
+            'latitude': station.latitude,
+            'longitude': station.longitude,
+            'name': station.name,
+            'slug': station.slug,
+        } for station in query)
 
 
 def get_updates(city=None, as_query=False):
@@ -243,11 +244,7 @@ def get_updates(city=None, as_query=False):
     Raises:
         CityNotFound: The city cannot be found.
     '''
-    query = models.City.query.with_entities(
-        models.City.name,
-        models.City.slug,
-        models.City.update
-    )
+    query = models.City.query
 
     # Filter on the city name
     if city:
@@ -256,7 +253,11 @@ def get_updates(city=None, as_query=False):
     if as_query:
         return query
     else:
-        return (city._asdict() for city in query.all())
+        return ({
+            'name': city.name,
+            'slug': city.slug,
+            'update': city.update
+        } for city in query.all())
 
 
 def make_forecast(city, station, kind, timestamp):
@@ -413,31 +414,65 @@ def filter_stations(city, lat, lon, limit, kind=None, mode=None,
 
 def find_closest_city(lat, lon, as_object=False):
     '''
-    Find the closest point to a given latitude and longitude.
+    Find the closest city to a given latitude and longitude.
 
     Args:
         lat (float): The latitude of the center point.
         lon (float): The longitude of the center point.
-        as_object (boolean): Return the city as a models.City object, if not a dict.
+        as_object (boolean): Return the city as a models.City object,
+            if not a dict.
 
     Returns:
-        dict or query: The closest city.
+        dict or object: The closest city.
     '''
     point = 'POINT({lat} {lon})'.format(lat=lat, lon=lon)
-    query = models.City.query.with_entities(
-        models.City.name,
-        models.City.latitude,
-        models.City.longitude,
-        models.City.predictable,
-        models.City.active,
-        models.City.country,
-        models.City.provider
-    )
+    query = models.City.query
     city = query.order_by(models.City.position.distance_box(point)).first()
+
     if as_object:
         return city
     else:
-        return city._asdict()
+        return {
+            'active': city.active,
+            'country': city.country,
+            'latitude': city.latitude,
+            'longitude': city.longitude,
+            'name': city.name,
+            'predictable': city.predictable,
+            'provider': city.provider,
+            'slug': city.slug
+        }
+
+
+def find_closest_station(lat, lon, as_object=False):
+    '''
+    Find the closest station to a given latitude and longitude.
+
+    Args:
+        lat (float): The latitude of the center point.
+        lon (float): The longitude of the center point.
+        as_object (boolean): Return the station as a models.Station object,
+            if not a dict.
+
+    Returns:
+        dict or object: The closest station.
+    '''
+    point = 'POINT({lat} {lon})'.format(lat=lat, lon=lon)
+    query = models.Station.query
+    query = query.filter_by(city=find_closest_city(lat, lon, as_object=True))
+    station = query.order_by(models.Station.position.distance_box(point)).first()
+
+    if as_object:
+        return station
+    else:
+        return {
+            'altitude': station.altitude,
+            'docks': station.docks,
+            'latitude': station.latitude,
+            'longitude': station.longitude,
+            'name': station.name,
+            'slug': station.slug,
+        }
 
 
 def get_metrics():

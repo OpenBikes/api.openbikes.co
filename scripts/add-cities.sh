@@ -1,3 +1,5 @@
+#!/bin/sh
+
 python3 manage.py addcity -f jcdecaux -c Brussels -a Bruxelles-Capitale -o "Brussels, BE" -p Belgium -e 1
 python3 manage.py addcity -f jcdecaux -c Amiens -a Amiens -o "Amiens, FR" -p France -e 1
 python3 manage.py addcity -f jcdecaux -c Besancon -a Besancon -o "Besancon, FR" -p France -e 1

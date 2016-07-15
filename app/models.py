@@ -1,13 +1,13 @@
+import json
 import math
 
 from geoalchemy2 import Geometry
 import pandas as pd
 from sqlalchemy import (
-    Column, Integer, String, Boolean, DateTime, Float, ForeignKey,
-    CheckConstraint
+    CheckConstraint, Column, Integer, String, Boolean, DateTime, Float,
+    ForeignKey, Text
 )
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils import JSONType
 
 from app.database import Model
 from training import util
@@ -19,7 +19,7 @@ class City(Model):
 
     active = Column(Boolean, nullable=False, index=True)
     country = Column(String, nullable=False, index=True)
-    geojson = Column(JSONType, nullable=False)
+    _geojson = Column(Text, nullable=False)
     id = Column(Integer, primary_key=True, autoincrement=True)
     latitude = Column(Float, nullable=False, index=True)
     longitude = Column(Float, nullable=False, index=True)
@@ -32,10 +32,18 @@ class City(Model):
     slug = Column(String, nullable=False, index=True)
     update = Column(DateTime, nullable=False, index=True)
 
-    stations = relationship('Station', back_populates='city')
+    stations = relationship('Station', back_populates='city', passive_deletes=True)
+
+    @property
+    def geojson(self):
+        return json.loads(self._geojson)
+
+    @geojson.setter
+    def geojson(self, value):
+        self._geojson = json.dumps(value)
 
     def __repr__(self):
-        return '<City %r>' % self.name
+        return '<City {}>'.format(self.name)
 
 
 class Station(Model):
@@ -51,14 +59,14 @@ class Station(Model):
     slug = Column(String, nullable=False, index=True)
 
     city = relationship('City', back_populates='stations')
-    city_id = Column(Integer, ForeignKey('cities.id'), nullable=False, index=True)
+    city_id = Column(Integer, ForeignKey('cities.id', ondelete='CASCADE'), nullable=False, index=True)
 
     training = relationship('Training', uselist=False)
 
-    predictions = relationship('Prediction', back_populates='station', lazy='dynamic')
+    predictions = relationship('Prediction', back_populates='station', lazy='dynamic', passive_deletes=True)
 
     def __repr__(self):
-        return '<Station %r>' % self.name
+        return '<Station {}>'.format(self.name)
 
     def predict(self, kind, date):
         '''
@@ -116,10 +124,10 @@ class Training(Model):
     moment = Column(DateTime, nullable=False, index=True)
 
     station = relationship('Station', back_populates='training')
-    station_id = Column(Integer, ForeignKey('stations.id'), nullable=False, index=True)
+    station_id = Column(Integer, ForeignKey('stations.id', ondelete='CASCADE'), nullable=False, index=True)
 
     def __repr__(self):
-        return '<Training for %r on %r>' % self.station, self.moment
+        return '<Training for {} on {}>'.format(self.station, self.moment)
 
 
 class Prediction(Model):
@@ -133,11 +141,11 @@ class Prediction(Model):
     predicted = Column(Integer, CheckConstraint('0 < predicted'), nullable=False, index=True)
 
     station = relationship('Station', back_populates='predictions')
-    station_id = Column(Integer, ForeignKey('stations.id'), nullable=False, index=True)
+    station_id = Column(Integer, ForeignKey('stations.id', ondelete='CASCADE'), nullable=False, index=True)
 
     __table_args__ = (
         CheckConstraint('at <= moment', name='ck_prediction_time_coherence'),
     )
 
     def __repr__(self):
-        return '<Prediction %r for %r on %r>' % self.kind, self.station, self.date
+        return '<Prediction of {} for {} on {}>'.format(self.kind, self.station, self.date)

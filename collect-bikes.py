@@ -1,34 +1,10 @@
 import datetime as dt
 
-from app.database import db_session
 from app import logger
 from app import models
-from collecting import collect
+from app.database import db_session
+from collecting import collect, util
 from mongo.timeseries import insert as insert_bikes
-
-
-def json_to_geojson(json_object):
-    ''' Convert to a format readable by Leaflet. '''
-
-    geojson = {
-        'type': 'FeatureCollection',
-        'features': [
-            {
-                'type': 'Feature',
-                'geometry': {
-                    'type': 'Point',
-                    'coordinates': [entry['longitude'], entry['latitude']]
-                },
-                'properties': entry,
-            } for entry in json_object
-        ]
-    }
-
-    # Remove the duplicated latitude and longitude
-    for feature in geojson['features']:
-        del feature['properties']['latitude']
-        del feature['properties']['longitude']
-    return geojson
 
 
 def fetch_data(city):
@@ -44,7 +20,7 @@ def fetch_data(city):
     if city.predictable is True:
         insert_bikes.city(city.name, stations)
     # Save the data for the map
-    city.geojson = json_to_geojson(stations)
+    city.geojson = util.json_to_geojson(stations)
     city.update = dt.datetime.now()
     db_session.commit()
 
@@ -56,3 +32,5 @@ for city in cities:
 
 #from joblib import Parallel, delayed
 #Parallel(n_jobs=2)(delayed(fetch_data)(city) for city in cities)
+
+logger.info('Bike data collected')

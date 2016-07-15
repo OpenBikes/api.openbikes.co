@@ -35,9 +35,9 @@ test:
 ### Setup developpement environment
 .PHONY: dev
 dev:
-	ln -s app/config_dev.py app/config.py
+	cd app && ln -sf config_dev.py config.py
 
 ### Setup production environment
 .PHONY: prod
 prod:
-	ln -s app/config_prod.py app/config.py
+	cd app && ln -sf config_prod.py config.py

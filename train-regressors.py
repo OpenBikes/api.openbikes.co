@@ -67,9 +67,9 @@ def optimize(regressor, training):
                 'Not enough training data',
                 city=training.station.city.name,
                 station=training.station.name,
-                t0=timeline[0],
-                t1=timeline[1],
-                t2=timeline[2]
+                t0=timeline[0].date(),
+                t1=timeline[1].date(),
+                t2=timeline[2].date()
             )
             continue
         # Split the training set into features and targets
@@ -120,3 +120,5 @@ stations = models.Station.query
 
 for station in stations:
     train(station)
+
+logger.info('Regressors trained')

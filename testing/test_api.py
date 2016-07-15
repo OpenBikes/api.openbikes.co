@@ -232,3 +232,12 @@ def test_api_closest_city():
         longitude='1.4333'
     ))
     assert rv.status_code == 200
+
+
+def test_api_closest_station():
+    ''' Check api_closest_station works. '''
+    rv = client.get('/api/closest_station/{latitude}/{longitude}'.format(
+        latitude='43.6',
+        longitude='1.4333'
+    ))
+    assert rv.status_code == 200

@@ -8,10 +8,9 @@ from app import app
 from app import models
 from app import services as srv
 from app import util
-from app.util import timethisfunc
 from app.database import init_db, drop_db, db_session
-from collecting import collect
-from collecting import google
+from collecting import collect, google
+from collecting import util as collect_util
 
 manager = Manager(app)
 
@@ -41,7 +40,7 @@ def dropdb():
         print(colored('The SQL database has been deleted', 'green'))
 
 
-@timethisfunc
+@util.timethisfunc
 @manager.option('-f', dest='provider', help='API provider script name')
 @manager.option('-c', dest='city', help='City name')
 @manager.option('-a', dest='city_api', help='City API name')
@@ -72,7 +71,7 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
     new_city = models.City(
         active=True,
         country=country,
-        geojson=stations,
+        geojson=collect_util.json_to_geojson(stations),
         latitude=mean_lat,
         longitude=mean_lon,
         name=city,
@@ -87,7 +86,7 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
     db_session.add(new_city)
     db_session.commit()
     # Add the stations and their initial training schedules
-    srv.insert_stations(new_city.id, stations, altitudes)
+    srv.insert_stations(new_city, stations, altitudes)
     print(colored("'{}' has been added".format(city), 'green'))
 
 

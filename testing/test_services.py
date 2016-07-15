@@ -23,8 +23,9 @@ def test_srv_geojson_city_not_found():
 
 def test_srv_geojson_success():
     ''' Check geojson service works with a valid city. '''
-    geojson = srv.geojson('Toulouse')
+    geojson, update = srv.geojson('Toulouse')
     assert isinstance(geojson, dict)
+    assert isinstance(update, dt.datetime)
 
 
 def test_srv_get_countries_nil():
@@ -242,6 +243,12 @@ def test_srv_find_closest_city():
     ''' Check find_closest_city service works. '''
     city = srv.find_closest_city(43.6, 1.4333)
     assert city['name'] == 'Toulouse'
+
+
+def test_srv_find_closest_station():
+    ''' Check find_closest_station service works. '''
+    station = srv.find_closest_station(43.6, 1.4333)
+    assert station['name'] == '00079 - PLACE LANGE'
 
 
 def test_srv_get_metrics():

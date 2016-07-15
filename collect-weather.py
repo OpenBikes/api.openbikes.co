@@ -1,4 +1,3 @@
-from app import app
 from app import logger
 from app import models
 from collecting import openweathermap as owm
@@ -26,3 +25,5 @@ for city in cities:
 
 #from joblib import Parallel, delayed
 #Parallel(n_jobs=2)(delayed(fetch_data)(city) for city in cities)
+
+logger.info('Weather data collected')

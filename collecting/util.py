@@ -3,6 +3,30 @@ import datetime as dt
 from bs4 import BeautifulSoup
 
 
+def json_to_geojson(json_object):
+    ''' Convert to a format readable by Leaflet. '''
+
+    geojson = {
+        'type': 'FeatureCollection',
+        'features': [
+            {
+                'type': 'Feature',
+                'geometry': {
+                    'type': 'Point',
+                    'coordinates': [entry['longitude'], entry['latitude']]
+                },
+                'properties': entry,
+            } for entry in json_object
+        ]
+    }
+
+    # Remove the duplicated latitude and longitude
+    for feature in geojson['features']:
+        del feature['properties']['latitude']
+        del feature['properties']['longitude']
+    return geojson
+
+
 def epoch_to_datetime(epoch, divisor=1):
     ''' Convert a UNIX timestamp to a datetime. '''
     moment = dt.datetime.fromtimestamp(round(epoch / divisor))
@@ -15,11 +39,9 @@ def load_xml(string):
 
 
 def extract_element(element, child):
-    '''
-    Extract the content of a child element from an XML element.
-    '''
+    ''' Extract the content of a child element from an XML element. '''
     value = element.find(child)
-    if type(value) is None:
+    if isinstance(value, None):
         return ''
     elif not value:
         return ''

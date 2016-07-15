@@ -25,9 +25,9 @@ def current(city):
         'datetime': dt.datetime.fromtimestamp(data['dt']),
         'pressure': data['main']['pressure'],
         'description': data['weather'][0]['description'],
-        'temperature': round(data['main']['temp'], 2),
+        'temperature': data['main']['temp'],
         'humidity': data['main']['humidity'],
-        'wind_speed': round(data['wind']['speed'], 2),
+        'wind_speed': data['wind']['speed'],
         'clouds': data['clouds']['all']
     }
     return weather

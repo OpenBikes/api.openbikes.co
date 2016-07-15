@@ -1,4 +1,10 @@
- FROM ubuntu:14.04
+FROM phusion/baseimage:0.9.19
+MAINTAINER OpenBikes
+
+# Use baseimage-docker's init system.
+CMD ["/sbin/my_init"]
+
+ENV TERM=xterm-256color
 
 # Set the locale
 RUN locale-gen en_US.UTF-8
@@ -18,17 +24,12 @@ RUN apt-get update && apt-get install -y \
     libxslt-dev \
     postgis \
     postgis* \
-    python3.4 \
-    python3.4-dev
-
-# Install pip3
-ADD https://raw.githubusercontent.com/pypa/pip/5d927de5cdc7c05b1afbdd78ae0d1b127c04d9d0/contrib/get-pip.py /root/get-pip.py
-RUN python3.4 /root/get-pip.py
-RUN pip3 install --upgrade pip
+    python3-pip
 
 # Install Python requirements
 RUN mkdir -p /usr/src/app
 COPY requirements.txt /usr/src/app/
+RUN pip3 install --upgrade pip
 RUN pip3 install -r /usr/src/app/requirements.txt
 
 # Copy the files from the host to the container
@@ -37,4 +38,11 @@ WORKDIR /usr/src/app
 RUN chmod 777 -R *
 
 # Add the crontab file
-ADD scripts/etc/crontab /etc/crontab
+ADD scripts/etc/crontab /etc/cron.d/jobs
+RUN chmod 777 /etc/cron.d/jobs
+RUN chmod 777 /etc/crontab
+RUN touch /var/log/cron.log
+RUN /usr/bin/crontab /etc/cron.d/jobs
+
+# Clean up
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
