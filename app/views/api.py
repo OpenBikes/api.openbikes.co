@@ -8,16 +8,18 @@ from app.exceptions import (
     InvalidKind,
     StationNotFound
 )
+from app.views import util
 
 
 API_BP = Blueprint('apibp', __name__, url_prefix='/api')
 
 
-@API_BP.route('/geojson/<string:city>', methods=['GET'])
-def api_geojson(city):
+@API_BP.route('/geojson/<string:city_name>', methods=['GET'])
+@util.crossdomain(origin='*')
+def api_geojson(city_name):
     ''' Return the latest geojson file of a city. '''
     try:
-        geojson, update = srv.geojson(city)
+        geojson, update = srv.geojson(city_name)
         try:
             geojson['update'] = update.isoformat()
             geojson['status'] = 'success'
@@ -32,6 +34,7 @@ def api_geojson(city):
 
 
 @API_BP.route('/countries', methods=['GET'])
+@util.crossdomain(origin='*')
 def api_countries():
     ''' Return the list of countries. '''
     args = request.args
@@ -53,6 +56,7 @@ def api_countries():
 
 
 @API_BP.route('/providers', methods=['GET'])
+@util.crossdomain(origin='*')
 def api_providers():
     ''' Return the list of providers. '''
     args = request.args
@@ -74,6 +78,7 @@ def api_providers():
 
 
 @API_BP.route('/cities', methods=['GET'])
+@util.crossdomain(origin='*')
 def api_cities():
     ''' Return the list of cities. '''
     args = request.args
@@ -100,6 +105,7 @@ def api_cities():
 
 
 @API_BP.route('/stations', methods=['GET'])
+@util.crossdomain(origin='*')
 def api_stations():
     ''' Return the list of stations. '''
     args = request.args
@@ -123,6 +129,7 @@ def api_stations():
 
 
 @API_BP.route('/updates', methods=['GET'])
+@util.crossdomain(origin='*')
 def api_updates():
     ''' Return the list of latest updates for each city. '''
     args = request.args
@@ -152,6 +159,7 @@ def api_updates():
 
 
 @API_BP.route('/forecast/<string:city>/<string:station>/<string:kind>/<float:timestamp>', methods=['GET'])
+@util.crossdomain(origin='*')
 def api_forecast(city, station, kind, timestamp):
     ''' Return a forecast for a station at a given time. '''
     error = lambda e: {
@@ -168,6 +176,7 @@ def api_forecast(city, station, kind, timestamp):
 
 
 @API_BP.route('/filtered_stations', methods=['GET'])
+@util.crossdomain(origin='*')
 def api_filtered_stations():
     ''' Return filtered stations. '''
     error = lambda e: {
@@ -206,6 +215,7 @@ def api_filtered_stations():
 
 
 @API_BP.route('/closest_city/<float:latitude>/<float:longitude>', methods=['GET'])
+@util.crossdomain(origin='*')
 def api_closest_city(latitude, longitude):
     ''' Return the closest city for a given latitude and longitude. '''
     response = srv.find_closest_city(latitude, longitude)
@@ -214,6 +224,7 @@ def api_closest_city(latitude, longitude):
 
 
 @API_BP.route('/closest_station/<float:latitude>/<float:longitude>', methods=['GET'])
+@util.crossdomain(origin='*')
 def api_closest_station(latitude, longitude):
     ''' Return the closest station for a given latitude and longitude. '''
     response = srv.find_closest_station(latitude, longitude)
@@ -222,6 +233,7 @@ def api_closest_station(latitude, longitude):
 
 
 @API_BP.route('/metrics', methods=['GET'])
+@util.crossdomain(origin='*')
 def api_metrics():
     ''' Returns latest metrics. '''
     nbr_providers, nbr_countries, nbr_cities, nbr_stations = srv.get_metrics()
