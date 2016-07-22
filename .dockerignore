@@ -1,8 +1,10 @@
 .git/
+*.db
+*.csv
+*.geojson
+*.log
+*.pkl
 *.pyc
 *.zip
-*.geojson
-*.db
-*.log
 config.py
 ngrok

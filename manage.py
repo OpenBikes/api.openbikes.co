@@ -101,7 +101,7 @@ def removecity(city):
     # Remove the city
     query.delete()
     db_session.commit()
-    print(colored("{}' has been removed".format(city), 'green'))
+    print(colored("'{}' has been removed".format(city), 'green'))
 
 
 @manager.command
