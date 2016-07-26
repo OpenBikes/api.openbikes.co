@@ -9,6 +9,8 @@ Running the script will basically sync the local database with the remote
 database.
 
 This script can be run from any directory.
+
+Example usage: `python scripts/import-dump.py Toulouse`
 '''
 
 import argparse
@@ -18,6 +20,7 @@ import time
 
 from pymongo import MongoClient
 from termcolor import colored
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('city', type=str, help='City for which to import data')

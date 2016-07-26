@@ -9,6 +9,8 @@ this script is launched from. The created directory contains:
 The datasets are made up with all the data on the local machine.
 
 This script has to be run from the root of this repository (next to `run.py`).
+
+Example usage: `python scripts/create-dataset.py Toulouse`
 '''
 
 import argparse
@@ -19,12 +21,10 @@ import sys
 import pandas as pd
 
 from app import services as srv
-from app.exceptions import (
-    CityNotFound,
-    CityUnpredicable
-)
+from app.exceptions import CityNotFound, CityUnpredicable
 from mongo.weather import query as weather
 from mongo.timeseries import query as ts
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('city', type=str, help='City for which to import data')

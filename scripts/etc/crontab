@@ -1,6 +1,6 @@
 # START CRON JOB LIST
-## Collect biking data every minute
-* * * * * cd /usr/src/app && python3 collect-bikes.py
+## Collect biking data every 2 minutes
+*/2 * * * * cd /usr/src/app && python3 collect-bikes.py
 
 ## Collect weather data every 15 minutes
 */15 * * * * cd /usr/src/app && python3 collect-weather.py
