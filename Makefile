@@ -7,8 +7,8 @@ PROJECT    := $(shell basename $(PWD))
 
 ## Commands
 
-.PHONY: docker.env
-docker.env:
+.PHONY: docker.create
+docker.create:
 	docker-machine create -d virtualbox --virtualbox-memory 512 --virtualbox-cpu-count 1 dev
 	docker-machine env dev
 	eval "$(docker-machine env dev)"
