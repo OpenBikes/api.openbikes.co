@@ -21,18 +21,16 @@ import time
 from pymongo import MongoClient
 from termcolor import colored
 
+from mongo.utils import mongo_conn
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('city', type=str, help='City for which to import data')
 parameters = parser.parse_args()
 city = parameters.city
 
-# Create a SSH tunnel in the background
-tunnel_command = 'ssh -f -N -L 2000:localhost:27017 46.101.234.224 -l max'
-subprocess.call(tunnel_command, shell=True)
-
 # Define the remote and the local connections
-remote_conn = MongoClient(port=2000)
+remote_conn = mongo_conn()
 local_conn = MongoClient()
 
 # Measure elapsed time along the import process

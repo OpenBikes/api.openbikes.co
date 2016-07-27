@@ -4,6 +4,8 @@ import pandas as pd
 from bson.objectid import ObjectId
 import click
 
+from mongo.utils import mongo_conn
+
 DESC = 1
 MONGO_ID_FMT = '%Y-%m-%d'
 DATE_ARG_FMT = '%d-%m-%Y'
@@ -92,14 +94,14 @@ def get_city_data(db, city, since=None, until=None):
 @click.option('--until', '-u', help="Filter data until (optional) - format 'dd-mm-yyyy'", default=None, type=str)
 @click.option('--export', '-e', help="Save dataframe to .csv ?", default=False, type=bool)
 def main(city, since, until, export):
-    mongo_conn = MongoClient(port=LOCAL_MONGO_PORT)
-    db = mongo_conn.OpenBikes
+    db = mongo_conn().OpenBikes
     data = get_city_data(db, city, since, until)
     temp_dfs = []
     for station, dataframe in data.items():
         dataframe['station'] = station
         temp_dfs.append(dataframe)
     df2d = pd.concat(temp_dfs, axis=0)
+    print(df2d)
     if export:
         df2d.to_csv('{}_{}_{}.csv'.format(city, since, until))
 
