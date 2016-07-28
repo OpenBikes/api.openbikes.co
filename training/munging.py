@@ -25,9 +25,6 @@ def extract_date_features(date):
 
 def prepare(dataframe):
     ''' Extract features and label them as categorical or numerical. '''
-    # Just to be sure, drop the duplicates
-    dataframe = dataframe.groupby(dataframe.index).first()
-    # Extract features
     features = pd.DataFrame([
         extract_date_features(date)
         for date in dataframe.index

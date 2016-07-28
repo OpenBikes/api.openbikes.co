@@ -10,7 +10,7 @@ The datasets are made up with all the data on the local machine.
 
 This script has to be run from the root of this repository (next to `run.py`).
 
-Example usage: `python scripts/create-dataset.py Toulouse`
+Example usage: `python create-dataset.py Toulouse`
 '''
 
 import argparse
@@ -48,11 +48,11 @@ if not os.path.exists(city['slug']):
 if not os.path.exists(os.path.join(city['slug'], 'stations/')):
     os.makedirs(os.path.join(city['slug'], 'stations/'))
 
-#Save the coordinates of each station
+# Save the coordinates of each station
 coordinates = pd.DataFrame(list(srv.get_stations(city=city['name'])))
 coordinates.to_csv(os.path.join(city['slug'], 'coordinates.csv'), index=False)
 
-#Save the data for each station
+# Save the data for each station
 stations = srv.get_stations(city=city['name'])
 
 for station in stations:
@@ -67,4 +67,3 @@ df = weather.fetch(city['name'],
                    since=dt.datetime(year=1900, month=1, day=1),
                    until=dt.datetime.now())
 df.to_csv(os.path.join(city['slug'], 'weather.csv'))
-

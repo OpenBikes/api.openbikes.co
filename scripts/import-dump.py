@@ -8,20 +8,19 @@ to import. If no previous entries exist then all the data will be imported.
 Running the script will basically sync the local database with the remote
 database.
 
-This script can be run from any directory.
+This script has to be run from the root of this repository (next to `run.py`).
 
-Example usage: `python scripts/import-dump.py Toulouse`
+Example usage: `python import-dump.py Toulouse`
 '''
 
 import argparse
 import datetime as dt
-import subprocess
 import time
 
 from pymongo import MongoClient
 from termcolor import colored
 
-from mongo.utils import mongo_conn
+from mongo.utils import create_remote_connexion
 
 
 parser = argparse.ArgumentParser()
@@ -30,7 +29,7 @@ parameters = parser.parse_args()
 city = parameters.city
 
 # Define the remote and the local connections
-remote_conn = mongo_conn()
+remote_conn = create_remote_connexion()
 local_conn = MongoClient()
 
 # Measure elapsed time along the import process

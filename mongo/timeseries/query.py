@@ -65,6 +65,8 @@ def station(city, station, since, until):
             pass
     # Rename the columns
     dataframe = rename_columns(dataframe)
+    # Drop the duplicates dates if they exist
+    dataframe = dataframe.groupby(dataframe.index).first()
     return dataframe
 
 
@@ -95,9 +97,10 @@ def city(city, year='\d{4}', month='\d{1,2}', day='\d{1,2}'):
     stations_dfs = {}
     for date, stations in dates_dfs.items():
         for station, df in stations.items():
+            # Drop the duplicates dates if they exist
+            df = df.groupby(df.index).first()
             # Add the date to the time for a unique index
-            df.index = df.index.map(
-                lambda i: datetime.strptime('/'.join((date, i)), fmt))
+            df.index = df.index.map(lambda i: datetime.strptime('/'.join((date, i)), fmt))
             # Concatenate the daily dataframes into one for the month
             if station in stations_dfs.keys():
                 stations_dfs[station] = pd.concat((stations_dfs[station], df))

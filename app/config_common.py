@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv, find_dotenv
 
 
+# Load the `.env` file at the root of the repository
 load_dotenv(find_dotenv())
 
 # API keys
