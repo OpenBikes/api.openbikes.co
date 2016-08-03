@@ -107,5 +107,6 @@ def city(city, year='\d{4}', month='\d{1,2}', day='\d{1,2}'):
             else:
                 stations_dfs[station] = df
     # Rename the columns
-    stations_dfs = rename_columns(stations_dfs)
+    for station in stations_dfs.keys():
+        stations_dfs[station] = rename_columns(stations_dfs[station])
     return stations_dfs

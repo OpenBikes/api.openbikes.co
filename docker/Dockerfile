@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y \
 
 # Install Python requirements
 RUN mkdir -p /usr/src/app
-COPY requirements.txt /usr/src/app/
+COPY ../requirements.txt /usr/src/app/
 RUN pip3 install --upgrade pip
 RUN pip3 install -r /usr/src/app/requirements.txt
 
