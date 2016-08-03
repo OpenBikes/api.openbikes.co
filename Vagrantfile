@@ -8,11 +8,7 @@
 Vagrant.configure(2) do |config|
 
   config.vm.box = "debian/jessie64"
-
-  # The private network is 192.168.10.0/24
-  # The host will get IP 192.168.10.1
-  config.vm.network "private_network", ip: "192.168.10.10"
-
+  config.vm.network "forwarded_port", guest: 80, host: 8080
   config.vm.provision "file", source: "bootstrap.sh", destination: "bootstrap.sh"
 
 end
