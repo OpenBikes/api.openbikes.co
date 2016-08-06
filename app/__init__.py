@@ -48,38 +48,41 @@ def shutdown_session(exception=None):
 
 @app.before_request
 def before_request():
-    # Create a session ID by generating a random hex value
-    if not session.get('session_id'):
-        session['session_id'] = random.randint(0, 10e5)
 
     # For measuring the wall-clock time of a request
     request.start_time = time.time()
 
-    data = {}
-    if request.data:
-        try:
-            data = json.loads(request.data)
-        except ValueError:
-            data = request.data
-
-    # Log the request with the attached args and body data
-    logger.info('HTTP request',
-                method=request.method,
-                endpoint=request.endpoint,
-                path=request.path,
-                args=request.args,
-                data=data)
+    # Create a session ID by generating a random hex value
+    if not session.get('session_id'):
+        session['session_id'] = str(binascii.b2a_hex(os.urandom(3)))
 
 
 @app.after_request
-def measure_elapsed_time(response):
-    elapsed_time = time.time() - request.start_time
-    if elapsed_time > 0.2:
-        log = logger.new(endpoint=request.endpoint, duration=elapsed_time)
-        if hasattr(request, 'queries_count'):
-            log = log.bind(queries_count=request.queries_count)
-            log = log.bind(queries_duration=request.queries_duration)
-        log.warning('Slow request')
+def after_request(response):
+
+    log = logger.new(
+        endpoint=request.endpoint,
+        method=request.method,
+        path=request.path,
+        args=request.args,
+        status_code=response.status_code
+    )
+
+    # Parse request data
+    if request.data:
+        try:
+            log = log.bind(data=json.loads(request.data))
+        except ValueError:
+            log = log.bind(data=request.data)
+
+    # Measure response time
+    log = log.bind(response_time=round(time.time() - request.start_time), 5)
+    if hasattr(request, 'queries_count') and hasattr(request, 'queries_duration'):
+        log = log.bind(queries_count=request.queries_count)
+        log = log.bind(queries_duration=round(request.queries_duration, 3))
+
+    log.info(u'HTTP request')
+
     return response
 
 

@@ -43,5 +43,5 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{pwd}@{host}:{port}/{name}'.forma
 TIMEZONE = 'Europe/Paris'
 
 # Logger settings
-LOG_MAXBYTES = 10e8  # 100 MB
-LOG_BACKUPS = 3
+LOG_MAXBYTES = 20e8  # 200 MB
+LOG_BACKUPS = 4  # 1 log file + 4 backups
