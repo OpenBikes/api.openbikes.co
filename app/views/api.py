@@ -11,7 +11,7 @@ from app.exceptions import (
 from app.views import util
 
 
-API_BP = Blueprint('apibp', __name__, url_prefix='/api')
+API_BP = Blueprint('apibp', __name__, url_prefix='')
 
 
 @API_BP.route('/geojson/<string:city_name>', methods=['GET'])
