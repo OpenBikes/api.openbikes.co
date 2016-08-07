@@ -1,6 +1,6 @@
+import binascii
 import json
 import os
-import random
 import sys
 import time
 
@@ -76,10 +76,10 @@ def after_request(response):
             log = log.bind(data=request.data)
 
     # Measure response time
-    log = log.bind(response_time=round(time.time() - request.start_time), 5)
+    log = log.bind(response_time=round(time.time() - request.start_time, 5))
     if hasattr(request, 'queries_count') and hasattr(request, 'queries_duration'):
         log = log.bind(queries_count=request.queries_count)
-        log = log.bind(queries_duration=round(request.queries_duration, 3))
+        log = log.bind(queries_duration=round(request.queries_duration, 5))
 
     log.info(u'HTTP request')
 
