@@ -14,12 +14,12 @@ from app.views import util
 API_BP = Blueprint('apibp', __name__, url_prefix='')
 
 
-@API_BP.route('/geojson/<string:city_name>', methods=['GET'])
+@API_BP.route('/geojson/<string:city_slug>', methods=['GET'])
 @util.crossdomain(origin='*')
-def api_geojson(city_name):
+def api_geojson(city_slug):
     ''' Return the latest geojson file of a city. '''
     try:
-        geojson, update = srv.geojson(city_name)
+        geojson, update = srv.geojson(city_slug)
         try:
             geojson['update'] = update.isoformat()
             geojson['status'] = 'success'
@@ -84,14 +84,13 @@ def api_cities():
     args = request.args
     # Check arguments are valid
     for arg in args:
-        if arg not in ('name', 'slug', 'country', 'provider', 'predictable', 'active'):
+        if arg not in ('city_slug', 'country', 'provider', 'predictable', 'active'):
             return jsonify({
                 'status': 'failure',
                 'message': "'{}' is not a valid parameter".format(arg)
             }), 400
     cities = list(srv.get_cities(
-        name=args.get('name'),
-        slug=args.get('slug'),
+        slug=args.get('city_slug'),
         country=args.get('country'),
         provider=args.get('provider'),
         predictable=args.get('predictable'),
@@ -111,15 +110,14 @@ def api_stations():
     args = request.args
     # Check arguments are valid
     for arg in args:
-        if arg not in ('name', 'slug', 'city'):
+        if arg not in ('city_slug', 'station_slug'):
             return jsonify({
                 'status': 'failure',
                 'message': "'{}' is not a valid parameter".format(arg)
             }), 400
     stations = list(srv.get_stations(
-        name=args.get('name'),
-        slug=args.get('slug'),
-        city=args.get('city')
+        city_slug=args.get('city_slug'),
+        slug=args.get('city_slug')
     ))
     return jsonify({
         'status': 'success',
@@ -135,16 +133,15 @@ def api_updates():
     args = request.args
     # Check arguments are valid
     for arg in args:
-        if arg not in 'city':
+        if arg not in ('city_slug',):
             return jsonify({
                 'status': 'failure',
                 'message': "'{}' is not a valid parameter".format(arg)
             }), 400
     try:
-        updates = list(srv.get_updates(args.get('city')))
-
-        for i in range(len(updates)):
-            updates[i]['update'] = updates[i]['update'].isoformat()
+        updates = list(srv.get_updates(args.get('city_slug')))
+        for i, update in enumerate(updates):
+            updates[i]['update'] = update['update'].isoformat()
 
         return jsonify({
             'status': 'success',
@@ -158,16 +155,16 @@ def api_updates():
         }), 404
 
 
-@API_BP.route('/forecast/<string:city>/<string:station>/<string:kind>/<float:timestamp>', methods=['GET'])
+@API_BP.route('/forecast/<string:city_slug>/<string:station_slug>/<string:kind>/<float:timestamp>', methods=['GET'])
 @util.crossdomain(origin='*')
-def api_forecast(city, station, kind, timestamp):
+def api_forecast(city_slug, station_slug, kind, timestamp):
     ''' Return a forecast for a station at a given time. '''
     error = lambda e: {
         'status': 'failure',
         'message': str(e)
     }
     try:
-        response = srv.make_forecast(city, station, kind, timestamp)
+        response = srv.make_forecast(city_slug, station_slug, kind, timestamp)
         response['status'] = 'success'
         return jsonify(response), 200
     except (InvalidKind, CityNotFound, StationNotFound, CityInactive,
@@ -186,15 +183,15 @@ def api_filtered_stations():
     # Check arguments are valid
     args = request.args
     for arg in args:
-        if arg not in ('city', 'latitude', 'longitude', 'limit', 'kind',
-                       'mode', 'timestamp', 'quantity'):
+        if arg not in ('city_slug', 'latitude', 'longitude', 'limit', 'kind', 'mode', 'timestamp',
+                       'quantity'):
             return jsonify({
                 'status': 'failure',
                 'message': "'{}' is not a valid parameter".format(arg)
             }), 400
     try:
         stations = srv.filter_stations(
-            city=args.get('city'),
+            city_slug=args.get('city_slug'),
             lat=float(args['latitude']) if args.get('latitude') else None,
             lon=float(args['longitude']) if args.get('longitude') else None,
             limit=int(args['limit']) if args.get('limit') else None,
@@ -207,7 +204,7 @@ def api_filtered_stations():
         )
         return jsonify({
             'status': 'success',
-            'stations': stations
+            'stations': list(stations)
         })
     except (InvalidKind, CityNotFound, CityInactive, CityUnpredicable,
             ValueError) as exc:

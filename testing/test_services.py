@@ -23,7 +23,7 @@ def test_srv_geojson_city_not_found():
 
 def test_srv_geojson_success():
     ''' Check geojson service works with a valid city. '''
-    geojson, update = srv.geojson('Toulouse')
+    geojson, update = srv.geojson('toulouse')
     assert isinstance(geojson, dict)
     assert isinstance(update, dt.datetime)
 
@@ -65,8 +65,8 @@ def test_srv_get_cities_nil():
 
 def test_srv_get_cities_all_params():
     ''' Check get_cities service works will all parameters. '''
-    cities = srv.get_cities(name='Toulouse', slug='toulouse', country='France',
-                            provider='jcdecaux', predictable=True, active=True)
+    cities = srv.get_cities(name='Toulouse', slug='toulouse', country='France', provider='jcdecaux',
+                            predictable=True, active=True)
     assert isinstance(cities, types.GeneratorType)
     assert len(list(cities)) == 1
 
@@ -80,22 +80,21 @@ def test_srv_get_stations_nil():
 
 def test_srv_get_stations_all_params():
     ''' Check get_stations service works will all parameters. '''
-    stations = srv.get_stations(name='00003 - POMME', slug='00003-pomme',
-                                city='Toulouse')
+    stations = srv.get_stations(name='00003 - POMME', slug='00003-pomme', city_slug='toulouse')
     assert isinstance(stations, types.GeneratorType)
     assert len(list(stations)) == 1
 
 
 def test_srv_updates_one_city():
     ''' Check get_updates service works for one city. '''
-    updates = srv.get_updates(city='Toulouse')
+    updates = srv.get_updates(city_slug='toulouse')
     assert isinstance(updates, types.GeneratorType)
     assert len(list(updates)) == 1
 
 
 def test_srv_get_updates_all_cities():
     ''' Check get_updates service works for all cities. '''
-    updates = srv.get_updates(city=None)
+    updates = srv.get_updates(city_slug=None)
     assert isinstance(updates, types.GeneratorType)
     assert len(list(updates)) >= 1
 
@@ -104,7 +103,7 @@ def test_srv_get_updates_all_cities():
 def test_srv_make_forecast_invalid_kind():
     ''' Check make_forecast service raises exception on invalid kind. '''
     future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    srv.make_forecast(city='Toulouse', station='00003 - POMME', kind='xyz',
+    srv.make_forecast(city_slug='toulouse', station_slug='00003-pomme', kind='xyz',
                       timestamp=future)
 
 
@@ -112,16 +111,14 @@ def test_srv_make_forecast_invalid_kind():
 def test_srv_make_forecast_city_not_found():
     ''' Check make_forecast service raises exception on invalid city. '''
     future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    srv.make_forecast(city='xyz', station='00003 - POMME', kind='bikes',
-                      timestamp=future)
+    srv.make_forecast(city_slug='xyz', station_slug='00003-pomme', kind='bikes', timestamp=future)
 
 
 @raises(StationNotFound)
 def test_srv_make_forecast_station_not_found():
     ''' Check make_forecast service raises exception on invalid station. '''
     future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    srv.make_forecast(city='Toulouse', station='xyz', kind='bikes',
-                      timestamp=future)
+    srv.make_forecast(city_slug='toulouse', station_slug='xyz', kind='bikes', timestamp=future)
 
 
 def test_srv_make_forecast_city_inactive():
@@ -134,7 +131,7 @@ def test_srv_make_forecast_city_inactive():
     @raises(CityInactive)
     def test():
         future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-        srv.make_forecast(city='Toulouse', station='00003 - POMME', kind='bikes',
+        srv.make_forecast(city_slug='toulouse', station_slug='00003-pomme', kind='bikes',
                           timestamp=future)
     # Tear down
     city = models.City.query.filter_by(name='Toulouse').first()
@@ -152,7 +149,7 @@ def test_srv_make_forecast_city_unpredictable():
     @raises(CityUnpredicable)
     def test():
         future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-        srv.make_forecast(city='Toulouse', station='00003 - POMME', kind='bikes',
+        srv.make_forecast(city_slug='toulouse', station_slug='00003-pomme', kind='bikes',
                           timestamp=future)
     # Tear down
     city = models.City.query.filter_by(name='Toulouse').first()
@@ -163,8 +160,8 @@ def test_srv_make_forecast_city_unpredictable():
 def test_srv_make_forecast_bikes():
     ''' Check make_forecast service works for forecasting bikes. '''
     future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    forecast = srv.make_forecast(city='Toulouse', station='00003 - POMME',
-                                 kind='bikes', timestamp=future)
+    forecast = srv.make_forecast(city_slug='toulouse', station_slug='00003-pomme', kind='bikes',
+                                 timestamp=future)
     assert type(forecast) == dict
     assert len(forecast.keys()) > 0
 
@@ -172,8 +169,8 @@ def test_srv_make_forecast_bikes():
 def test_srv_forecast_spaces():
     ''' Check make_forecast service works for forecasting spaces. '''
     future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    forecast = srv.make_forecast(city='Toulouse', station='00003 - POMME',
-                                 kind='spaces', timestamp=future)
+    forecast = srv.make_forecast(city_slug='toulouse', station_slug='00003-pomme', kind='spaces',
+                                 timestamp=future)
     assert type(forecast) == dict
     assert len(forecast.keys()) > 0
 
@@ -187,25 +184,25 @@ def test_srv_filter_stations_city_not_none():
 @raises(ValueError)
 def test_srv_filter_stations_lat_not_none():
     ''' Check filter_stations service doesn't accept None for the lat argument. '''
-    srv.filter_stations('Toulouse', None, 1.4333, 1)
+    srv.filter_stations('toulouse', None, 1.4333, 1)
 
 
 @raises(ValueError)
 def test_srv_filter_stations_lon_not_none():
     ''' Check filter_stations service doesn't accept None for the lon argument. '''
-    srv.filter_stations('Toulouse', 43.6, None, 1)
+    srv.filter_stations('toulouse', 43.6, None, 1)
 
 
 @raises(ValueError)
 def test_srv_filter_stations_limit_not_none():
     ''' Check filter_stations service doesn't accept None for the limit argument. '''
-    srv.filter_stations('Toulouse', 43.6, 1.4333, None)
+    srv.filter_stations('toulouse', 43.6, 1.4333, None)
 
 
 @raises(ValueError)
 def test_srv_filter_stations_invalid_limit_value():
     ''' Check filter_stations service raises exception on invalid limit value. '''
-    srv.filter_stations('Toulouse', 43.6, 1.4333, -1)
+    srv.filter_stations('toulouse', 43.6, 1.4333, -1)
 
 
 @raises(CityNotFound)
@@ -218,7 +215,7 @@ def test_srv_filter_stations_city_not_found():
 def test_srv_filter_stations_invalid_mode_value():
     ''' Check filter_stations service raises exception on invalid mode value. '''
     future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    srv.filter_stations('Toulouse', 43.6, 1.4333, 1, kind='bikes', mode='xyz',
+    srv.filter_stations('toulouse', 43.6, 1.4333, 1, kind='bikes', mode='xyz',
                         timestamp=future, quantity=1, confidence=0.5)
 
 
@@ -226,14 +223,14 @@ def test_srv_filter_stations_invalid_mode_value():
 def test_srv_filter_stations_invalid_confidence_value():
     ''' Check filter_stations service raises exception on invalid confidence value. '''
     future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    srv.filter_stations('Toulouse', 43.6, 1.4333, 1, kind='bikes', mode='walking',
+    srv.filter_stations('toulouse', 43.6, 1.4333, 1, kind='bikes', mode='walking',
                         timestamp=future, quantity=1, confidence=-1)
 
 
 def test_srv_filter_stations_prediction():
     ''' Check filter_stations service works as expected with a prediction. '''
     future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    stations = srv.filter_stations('Toulouse', 43.6, 1.4333, 1, kind='bikes',
+    stations = srv.filter_stations('toulouse', 43.6, 1.4333, 1, kind='bikes',
                                    mode='walking', timestamp=future, quantity=1,
                                    confidence=0.5,)
     assert len(stations) == 1
@@ -254,7 +251,7 @@ def test_srv_find_closest_station():
 def test_srv_get_metrics():
     ''' Check get_metrics service works. '''
     nbr_providers, nbr_countries, nbr_cities, nbr_stations = srv.get_metrics()
-    assert isinstance(nbr_providers, int)
-    assert isinstance(nbr_countries, int)
-    assert isinstance(nbr_cities, int)
-    assert isinstance(nbr_stations, int)
+    assert isinstance(nbr_providers, int) and nbr_countries > 0
+    assert isinstance(nbr_countries, int) and nbr_providers > 0
+    assert isinstance(nbr_cities, int) and nbr_cities > 0
+    assert isinstance(nbr_stations, int) and nbr_stations > 0

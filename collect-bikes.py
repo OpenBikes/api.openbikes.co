@@ -27,10 +27,10 @@ def fetch_data(city):
 
 cities = models.City.query.filter_by(active=True)
 
-# for city in cities:
-#     fetch_data(city)
+for city in cities:
+    fetch_data(city)
 
-from joblib import Parallel, delayed
-Parallel(n_jobs=2)(delayed(fetch_data)(city) for city in cities)
+# from joblib import Parallel, delayed
+# Parallel(n_jobs=2)(delayed(fetch_data)(city) for city in cities)
 
 logger.info('Bike data collected')

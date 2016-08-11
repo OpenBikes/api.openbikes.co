@@ -12,6 +12,7 @@ from app.exceptions import (
 from app import util
 from app import models
 from app.database import db_session
+from app.serialization import serialize_city, serialize_station
 from collecting import google
 
 
@@ -65,12 +66,12 @@ def insert_stations(city, stations, altitudes):
     return True
 
 
-def geojson(city_name):
+def geojson(city_slug):
     '''
     Open and return the latest geojson file of a city as a dictionary.
 
     Args:
-        city (str): The city name.
+        city_slug (str): The city's slugified name.
 
     Returns:
         dict: The latest geojson file.
@@ -80,10 +81,10 @@ def geojson(city_name):
         CityNotFound: The geojson file cannot be found.
     '''
     try:
-        city = models.City.query.filter_by(name=city_name).first()
+        city = models.City.query.filter_by(slug=city_slug).first()
         return city.geojson, city.update
     except:
-        raise CityNotFound("'{}' not found".format(city_name))
+        raise CityNotFound("'{}' not found".format(city_slug))
 
 
 def get_countries(provider=None):
@@ -178,26 +179,17 @@ def get_cities(name=None,
     if as_query:
         return query
     else:
-        return ({
-            'active': city.active,
-            'country': city.country,
-            'latitude': city.latitude,
-            'longitude': city.longitude,
-            'name': city.name,
-            'predictable': city.predictable,
-            'provider': city.provider,
-            'slug': city.slug
-        } for city in query)
+        return (serialize_city(city) for city in query)
 
 
-def get_stations(name=None, slug=None, city=None, as_query=False):
+def get_stations(name=None, slug=None, city_slug=None, as_query=False):
     '''
     Filter and return a dictionary or query of stations.
 
     Args:
         name (str): A station name.
-        slug (str): The slugified station name.
-        city (str): A city name.
+        slug (str): A station's slugified name.
+        city_slug (str): A city's slugified name.
         as_query (bool): Return the query object or a generator.
 
     Returns:
@@ -215,28 +207,21 @@ def get_stations(name=None, slug=None, city=None, as_query=False):
         query = query.filter_by(slug=slug)
 
     # Filter on the belonging city
-    if city:
-        query = query.join(models.City).filter(models.City.name == city)
+    if city_slug:
+        query = query.join(models.City).filter(models.City.slug == city_slug)
 
     if as_query:
         return query
     else:
-        return ({
-            'altitude': station.altitude,
-            'docks': station.docks,
-            'latitude': station.latitude,
-            'longitude': station.longitude,
-            'name': station.name,
-            'slug': station.slug,
-        } for station in query)
+        return (serialize_station(station) for station in query)
 
 
-def get_updates(city=None, as_query=False):
+def get_updates(city_slug=None, as_query=False):
     '''
     Return the latest update time for one or more cities.
 
     Args:
-        city (str): The city name. `None` implies all the cities.
+        city_slug (str): The city's slugified name. `None` implies all the cities.
 
     Returns:
         generator(dict): The update for each specified city.
@@ -246,9 +231,9 @@ def get_updates(city=None, as_query=False):
     '''
     query = models.City.query
 
-    # Filter on the city name
-    if city:
-        query = query.filter_by(name=city)
+    # Filter on the city slug
+    if city_slug:
+        query = query.filter_by(slug=city_slug)
 
     if as_query:
         return query
@@ -260,13 +245,13 @@ def get_updates(city=None, as_query=False):
         } for city in query.all())
 
 
-def make_forecast(city, station, kind, timestamp):
+def make_forecast(city_slug, station_slug, kind, timestamp):
     '''
     Forecast the number of bikes/spaces for a station at a certain time.
 
     Args:
-        city (str): The name of the city the station belongs to.
-        station (str): The station name.
+        city_slug (str): The slugified name of the city the station belongs to.
+        station_slug (str): The station's slugified name.
         kind (str): Either "bikes" or "spaces"
         timestamp (float): The time at which the forecast should be made.
 
@@ -284,32 +269,33 @@ def make_forecast(city, station, kind, timestamp):
     # Kind is invalid
     if kind not in ('bikes', 'spaces'):
         raise InvalidKind("'{}' is not a valid kind")
-    query = models.Station.query.join(models.City).filter(models.City.name == city)
+    query = models.Station.query.join(models.City).filter(models.City.slug == city_slug)
 
     # City doesn't exist
     if query.count() == 0:
-        raise CityNotFound("'{}' not found".format(city))
-    query = query.filter(models.Station.name == station)
+        raise CityNotFound("'{}' not found".format(city_slug))
+    query = query.filter(models.Station.slug == station_slug)
 
     # Station doesn't exist
     if query.count() == 0:
-        raise StationNotFound("'{}' not found".format(station))
+        raise StationNotFound("'{}' not found".format(station_slug))
 
     # Run the query
     station = query.first()
 
     # City not active
     if not station.city.active:
-        raise CityInactive("'{}' is inactive".format(city))
+        raise CityInactive("'{}' is inactive".format(city_slug))
 
     # City not predictable
     if not station.city.predictable:
-        raise CityUnpredicable("'{}' is unpredictable".format(city))
+        raise CityUnpredicable("'{}' is unpredictable".format(city_slug))
 
     # Build a forecast
     moment = dt.datetime.fromtimestamp(timestamp)
     forecast = {
-        'city': city,
+        'city': city_slug,
+        'slug': station_slug,
         'station': station.name,
         'kind': kind,
         'timestamp': timestamp,
@@ -325,8 +311,8 @@ def make_forecast(city, station, kind, timestamp):
     return forecast
 
 
-def filter_stations(city, lat, lon, limit, kind=None, mode=None,
-                    timestamp=None, quantity=None, confidence=None):
+def filter_stations(city_slug, lat, lon, limit, kind=None, mode=None, timestamp=None, quantity=None,
+                    confidence=None):
     '''
     Find suitable stations based on a starting point in a particular city.
     It's possible to filter by distance or/and by number of bikes/spaces.
@@ -335,7 +321,7 @@ def filter_stations(city, lat, lon, limit, kind=None, mode=None,
     to make forecasts.
 
     Args:
-        city (str): The city in which to search for stations
+        city_slug (str): The city's slugified name in which to search for stations.
         lat (float): The latitude of the center point.
         lon (float): The longitude of the center point.
         limit (int): The maximal number of returned stations.
@@ -358,7 +344,7 @@ def filter_stations(city, lat, lon, limit, kind=None, mode=None,
     '''
 
     # Verify necessary arguments are not None
-    for arg in (city, lat, lon, limit):
+    for arg in (city_slug, lat, lon, limit):
         if arg is None:
             raise ValueError("'{}' cannot be nil".format(arg))
 
@@ -377,10 +363,11 @@ def filter_stations(city, lat, lon, limit, kind=None, mode=None,
 
     # Query all the stations in the given city
     point = 'POINT({lat} {lon})'.format(lat=lat, lon=lon)
-    query = get_stations(city=city, as_query=True)
+    query = get_stations(city_slug=city_slug, as_query=True)
     query = query.order_by(models.Station.position.distance_box(point))
+
     if query.count() == 0:
-        raise CityNotFound("'{}' not found".format(city))
+        raise CityNotFound("'{}' not found".format(city_slug))
 
     # Filter by number of bikes/spaces and limit
     candidates = []
@@ -389,13 +376,13 @@ def filter_stations(city, lat, lon, limit, kind=None, mode=None,
         # Go through the stations in chunks
         chunk = query.paginate(per_page=5)
         while len(candidates) < limit and chunk.has_next is True:
-            destinations = [station._asdict() for station in chunk.items]
+            destinations = [station.__dict__ for station in chunk.items]
             distances = google.distances(origin, destinations, mode, timestamp)
             # Forecast the number of bikes/spaces
             for station, distance in zip(destinations, distances):
                 # Calculate estimated time of arrival
                 eta = timestamp + distance
-                forecasted = make_forecast(city, station['name'], kind, eta)
+                forecasted = make_forecast(city_slug, station['slug'], kind, eta)
                 # Check if the worst case scenario is acceptable
                 worst_case = forecasted['quantity'] - norm.ppf(confidence) * forecasted['error']
                 if worst_case >= quantity:
@@ -407,7 +394,7 @@ def filter_stations(city, lat, lon, limit, kind=None, mode=None,
                         break
             chunk = chunk.next()
     else:
-        candidates = [station._asdict() for station in query.limit(limit)]
+        candidates = (serialize_station(station) for station in query.limit(limit))
     # Return each station as a dictionary
     return candidates
 
@@ -432,16 +419,7 @@ def find_closest_city(lat, lon, as_object=False):
     if as_object:
         return city
     else:
-        return {
-            'active': city.active,
-            'country': city.country,
-            'latitude': city.latitude,
-            'longitude': city.longitude,
-            'name': city.name,
-            'predictable': city.predictable,
-            'provider': city.provider,
-            'slug': city.slug
-        }
+        return serialize_city(city)
 
 
 def find_closest_station(lat, lon, as_object=False):
@@ -465,14 +443,7 @@ def find_closest_station(lat, lon, as_object=False):
     if as_object:
         return station
     else:
-        return {
-            'altitude': station.altitude,
-            'docks': station.docks,
-            'latitude': station.latitude,
-            'longitude': station.longitude,
-            'name': station.name,
-            'slug': station.slug,
-        }
+        return serialize_station(station)
 
 
 def get_metrics():
