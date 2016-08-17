@@ -12,6 +12,7 @@ from app.database import init_db, drop_db, db_session
 from collecting import collect, google
 from collecting import util as collect_util
 
+
 manager = Manager(app)
 
 
@@ -170,7 +171,7 @@ def disablecity(city):
 
 @manager.command
 def enablecity(city):
-    ''' Enable a city from the application '''
+    ''' Enable a city in the application '''
     # Check if the city is not in the database
     query = models.City.query.filter_by(name=city)
     if query.count() == 0:

@@ -41,12 +41,7 @@ def load_xml(string):
 def extract_element(element, child):
     ''' Extract the content of a child element from an XML element. '''
     value = element.find(child)
-    if isinstance(value, None):
-        return ''
-    elif not value:
-        return ''
-    else:
-        return value.string
+    return value.string if value else ''
 
 
 def extract_attribute(element, attribute):

@@ -20,9 +20,8 @@ def normalize(stations):
         'status': 'OPEN' if extract(station, 'locked') == 'false' else 'CLOSED',
         'bikes': int(extract(station, 'nbbikes')),
         'stands': int(extract(station, 'nbemptydocks')),
-        'update': util.epoch_to_datetime(int(extract(station,
-                                           'latestupdatetime')),
-                                       divisor=1000).isoformat()
+        'update': util.epoch_to_datetime(int(extract(station, 'latestupdatetime')),
+                                         divisor=1000).isoformat()
     }
     return [
         normalized(station)

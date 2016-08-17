@@ -354,8 +354,7 @@ def filter_stations(city_slug, lat, lon, limit, kind=None, mode=None, timestamp=
 
     # Verify mode is valid
     if mode is not None and mode not in ('driving', 'walking', 'bicycling', 'transit'):
-        raise ValueError("'mode' has to be either 'driving', 'walking'" + \
-                         "'bicycling' or 'transit'")
+        raise ValueError("'mode' has to be either 'driving', 'walking', 'bicycling' or 'transit'")
 
     # Verify confidence is valid
     if confidence is not None and not 0 <= confidence <= 1:
@@ -376,7 +375,7 @@ def filter_stations(city_slug, lat, lon, limit, kind=None, mode=None, timestamp=
         # Go through the stations in chunks
         chunk = query.paginate(per_page=5)
         while len(candidates) < limit and chunk.has_next is True:
-            destinations = [station.__dict__ for station in chunk.items]
+            destinations = [serialize_station(station) for station in chunk.items]
             distances = google.distances(origin, destinations, mode, timestamp)
             # Forecast the number of bikes/spaces
             for station, distance in zip(destinations, distances):

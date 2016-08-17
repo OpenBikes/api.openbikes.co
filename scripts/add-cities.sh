@@ -81,7 +81,6 @@ python3 manage.py addcity -f nextbike -c Seferihisar -a 249 -o "Seferihisar, TR"
 python3 manage.py addcity -f nextbike -c Dubai -a 219 -o "Dubai, AE" -p UAE -e 0
 python3 manage.py addcity -f nextbike -c "Abu Dhabi" -a 322 -o "Abu Dhabi, AE" -p UAE -e 0
 python3 manage.py addcity -f nextbike -c Zagreb -a 220 -o "Zagreb - Centar, HR" -p Croatia -e 0
-python3 manage.py addcity -f nextbike -c Kraków -a 232 -o "Krakow, Poland" -p Poland -e 0
 python3 manage.py addcity -f nextbike -c Białystok -a 245 -o "Bialystok, Poland" -p Poland -e 0
 python3 manage.py addcity -f nextbike -c Belfast -a 238 -o "Belfast, GB" -p UK -e 0
 python3 manage.py addcity -f nextbike -c Konstancin-Jeziorna -a 247 -o "Konstancin-Jeziorna, Poland" -p Poland -e 0

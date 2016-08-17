@@ -20,7 +20,7 @@ def chunkify(l, p):
         List(List): The chunks.
 
     Raises:
-        ValueError: p has to be a positive integer.
+        ValueError: `p` has to be a positive integer.
     '''
     if type(p) != int or p <= 0:
         raise ValueError("'p' should be a positive integer.")
@@ -35,7 +35,7 @@ def unchunkify(l):
         l (List(List)): The list of chunks to flatten.
 
     Returns:
-        List: The flatten list.
+        List: The flattened list.
     '''
     return sum(l, [])
 
