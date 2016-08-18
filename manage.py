@@ -1,6 +1,6 @@
 import datetime as dt
 
-from flask.ext.script import Manager, prompt_bool, Shell, Server
+from flask_script import Manager, prompt_bool, Shell, Server
 import numpy as np
 from termcolor import colored
 
@@ -8,7 +8,7 @@ from app import app
 from app import models
 from app import services as srv
 from app import util
-from app.database import init_db, drop_db, db_session
+from app.database import init_db, drop_db, db_session_maker
 from collecting import collect, google
 from collecting import util as collect_util
 
@@ -50,6 +50,7 @@ def dropdb():
 @manager.option('-e', dest='predictable', help='Predictions enabled flag', default=False)
 def addcity(provider, city, city_api, city_owm, country, predictable):
     ''' Add a city to the application '''
+    session = db_session_maker()
     # Check if the city is already in the database
     if models.City.query.filter_by(name=city).count() > 0:
         print(colored("'{}' has already been added".format(city), 'cyan'))
@@ -62,7 +63,7 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
         return
     # Fetch the altitudes of every station
     try:
-        altitudes = google.altitudes(stations)
+        altitudes = google.fetch_altitudes(stations)
     except:
         print(colored("Couldn't get altitudes for '{}'".format(city), 'red'))
         return
@@ -84,8 +85,8 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
         slug=util.slugify(city),
         update=dt.datetime.now()
     )
-    db_session.add(new_city)
-    db_session.commit()
+    session.add(new_city)
+    session.commit()
     # Add the stations and their initial training schedules
     srv.insert_stations(new_city, stations, altitudes)
     print(colored("'{}' has been added".format(city), 'green'))
@@ -94,6 +95,7 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
 @manager.command
 def removecity(city):
     ''' Remove a city in the application '''
+    session = db_session_maker()
     # Check if the city is not in the database
     query = models.City.query.filter_by(name=city)
     if query.count() == 0:
@@ -101,13 +103,14 @@ def removecity(city):
         return
     # Remove the city
     query.delete()
-    db_session.commit()
+    session.commit()
     print(colored("'{}' has been removed".format(city), 'green'))
 
 
 @manager.command
 def refreshcity(city):
     ''' Refresh a city in the application '''
+    session = db_session_maker()
     # Check if the city is not in the database
     query = models.City.query.filter_by(name=city)
     if query.count() == 0:
@@ -129,8 +132,8 @@ def refreshcity(city):
         if station.name not in new_station_names
     ]
     for station in stations_to_delete:
-        db_session.delete(station)
-    db_session.commit()
+        session.delete(station)
+    session.commit()
     # Add the new stations
     old_station_names = [station.name for station in existing_stations]
     new_stations = [
@@ -140,7 +143,7 @@ def refreshcity(city):
     ]
     # Add the altitudes of every station
     try:
-        altitudes = google.altitudes(new_stations)
+        altitudes = google.fetch_altitudes(new_stations)
     except:
         print(colored("Couldn't get altitudes for '{}'".format(city.name), 'red'))
         return
@@ -154,6 +157,7 @@ def refreshcity(city):
 @manager.command
 def disablecity(city):
     ''' Disable a city from the application '''
+    session = db_session_maker()
     # Check if the city is not in the database
     query = models.City.query.filter_by(name=city)
     if query.count() == 0:
@@ -165,13 +169,14 @@ def disablecity(city):
         print(colored("'{}' is already disabled".format(city), 'cyan'))
         return
     city.active = False
-    db_session.commit()
+    session.commit()
     print(colored("'{}' has been disabled".format(city), 'green'))
 
 
 @manager.command
 def enablecity(city):
     ''' Enable a city in the application '''
+    session = db_session_maker()
     # Check if the city is not in the database
     query = models.City.query.filter_by(name=city)
     if query.count() == 0:
@@ -183,7 +188,7 @@ def enablecity(city):
         print(colored("'{}' is already enabled".format(city), 'cyan'))
         return
     city.active = True
-    db_session.commit()
+    session.commit()
     print(colored("'{}' has been enabled".format(city), 'green'))
 
 

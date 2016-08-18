@@ -5,7 +5,7 @@ from nose.tools import raises
 
 from app import services as srv
 from app import models
-from app.database import db_session
+from app.database import db_session_maker
 from app.exceptions import (
     CityNotFound,
     CityInactive,
@@ -102,149 +102,178 @@ def test_srv_get_updates_all_cities():
 @raises(InvalidKind)
 def test_srv_make_forecast_invalid_kind():
     ''' Check make_forecast service raises exception on invalid kind. '''
-    future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    srv.make_forecast(city_slug='toulouse', station_slug='00003-pomme', kind='xyz',
-                      timestamp=future)
+    future = dt.datetime.now() + dt.timedelta(minutes=1)
+    srv.make_forecast(city_slug='toulouse', station_slug='00003-pomme', kind='xyz', moment=future)
 
 
 @raises(CityNotFound)
 def test_srv_make_forecast_city_not_found():
     ''' Check make_forecast service raises exception on invalid city. '''
-    future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    srv.make_forecast(city_slug='xyz', station_slug='00003-pomme', kind='bikes', timestamp=future)
+    future = dt.datetime.now() + dt.timedelta(minutes=1)
+    srv.make_forecast(city_slug='xyz', station_slug='00003-pomme', kind='bikes', moment=future)
 
 
 @raises(StationNotFound)
 def test_srv_make_forecast_station_not_found():
     ''' Check make_forecast service raises exception on invalid station. '''
-    future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    srv.make_forecast(city_slug='toulouse', station_slug='xyz', kind='bikes', timestamp=future)
+    future = dt.datetime.now() + dt.timedelta(minutes=1)
+    srv.make_forecast(city_slug='toulouse', station_slug='xyz', kind='bikes', moment=future)
 
 
 def test_srv_make_forecast_city_inactive():
     ''' Check make_forecast service raises exception on inactive city. '''
+    session = db_session_maker()
     # Setup
     city = models.City.query.filter_by(name='Toulouse').first()
     city.active = False
-    db_session.commit()
+    session.commit()
     # Test
     @raises(CityInactive)
     def test():
-        future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-        srv.make_forecast(city_slug='toulouse', station_slug='00003-pomme', kind='bikes',
-                          timestamp=future)
+        future = dt.datetime.now() + dt.timedelta(minutes=1)
+        srv.make_forecast(
+            city_slug='toulouse',
+            station_slug='00003-pomme',
+            kind='bikes',
+            moment=future
+        )
     # Tear down
     city = models.City.query.filter_by(name='Toulouse').first()
     city.active = True
-    db_session.commit()
+    session.commit()
 
 
 def test_srv_make_forecast_city_unpredictable():
     ''' Check make_forecast service raises exception on unpredictable city. '''
+    session = db_session_maker()
     # Setup
     city = models.City.query.filter_by(name='Toulouse').first()
     city.predictable = False
-    db_session.commit()
+    session.commit()
     # Test
     @raises(CityUnpredicable)
     def test():
-        future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-        srv.make_forecast(city_slug='toulouse', station_slug='00003-pomme', kind='bikes',
-                          timestamp=future)
+        future = dt.datetime.now() + dt.timedelta(minutes=1)
+        srv.make_forecast(
+            city_slug='toulouse',
+            station_slug='00003-pomme',
+            kind='bikes',
+            moment=future
+        )
     # Tear down
     city = models.City.query.filter_by(name='Toulouse').first()
     city.predictable = True
-    db_session.commit()
+    session.commit()
 
 
 def test_srv_make_forecast_bikes():
     ''' Check make_forecast service works for forecasting bikes. '''
-    future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    forecast = srv.make_forecast(city_slug='toulouse', station_slug='00003-pomme', kind='bikes',
-                                 timestamp=future)
-    assert type(forecast) == dict
+    future = dt.datetime.now() + dt.timedelta(minutes=1)
+    forecast = srv.make_forecast(
+        city_slug='toulouse',
+        station_slug='00003-pomme',
+        kind='bikes',
+        moment=future
+    )
+    assert isinstance(forecast, dict)
     assert len(forecast.keys()) > 0
 
 
 def test_srv_forecast_spaces():
     ''' Check make_forecast service works for forecasting spaces. '''
-    future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    forecast = srv.make_forecast(city_slug='toulouse', station_slug='00003-pomme', kind='spaces',
-                                 timestamp=future)
-    assert type(forecast) == dict
+    future = dt.datetime.now() + dt.timedelta(minutes=1)
+    forecast = srv.make_forecast(
+        city_slug='toulouse',
+        station_slug='00003-pomme',
+        kind='spaces',
+        moment=future
+    )
+    assert isinstance(forecast, dict)
     assert len(forecast.keys()) > 0
-
-
-@raises(ValueError)
-def test_srv_filter_stations_city_not_none():
-    ''' Check filter_stations service doesn't accept None for the city argument. '''
-    srv.filter_stations(None, 43.6, 1.4333, 1)
-
-
-@raises(ValueError)
-def test_srv_filter_stations_lat_not_none():
-    ''' Check filter_stations service doesn't accept None for the lat argument. '''
-    srv.filter_stations('toulouse', None, 1.4333, 1)
-
-
-@raises(ValueError)
-def test_srv_filter_stations_lon_not_none():
-    ''' Check filter_stations service doesn't accept None for the lon argument. '''
-    srv.filter_stations('toulouse', 43.6, None, 1)
-
-
-@raises(ValueError)
-def test_srv_filter_stations_limit_not_none():
-    ''' Check filter_stations service doesn't accept None for the limit argument. '''
-    srv.filter_stations('toulouse', 43.6, 1.4333, None)
 
 
 @raises(ValueError)
 def test_srv_filter_stations_invalid_limit_value():
     ''' Check filter_stations service raises exception on invalid limit value. '''
-    srv.filter_stations('toulouse', 43.6, 1.4333, -1)
+    srv.filter_stations(
+        city_slug='toulouse',
+        latitude=43.6,
+        longitude=1.4333,
+        limit=-1
+    )
 
 
 @raises(CityNotFound)
 def test_srv_filter_stations_city_not_found():
     ''' Check filter_stations service raises exception on invalid city. '''
-    srv.filter_stations('xyz', 43.6, 1.4333, 1)
+    srv.filter_stations(
+        city_slug='xyz',
+        latitude=43.6,
+        longitude=1.4333,
+        limit=1
+    )
 
 
 @raises(ValueError)
 def test_srv_filter_stations_invalid_mode_value():
     ''' Check filter_stations service raises exception on invalid mode value. '''
-    future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    srv.filter_stations('toulouse', 43.6, 1.4333, 1, kind='bikes', mode='xyz',
-                        timestamp=future, quantity=1, confidence=0.5)
+    future = dt.datetime.now() + dt.timedelta(minutes=1)
+    srv.filter_stations(
+        city_slug='toulouse',
+        latitude=43.6,
+        longitude=1.4333,
+        limit=1,
+        kind='bikes',
+        mode='xyz',
+        moment=future,
+        desired_quantity=1,
+        confidence=0.5
+    )
 
 
 @raises(ValueError)
 def test_srv_filter_stations_invalid_confidence_value():
     ''' Check filter_stations service raises exception on invalid confidence value. '''
-    future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    srv.filter_stations('toulouse', 43.6, 1.4333, 1, kind='bikes', mode='walking',
-                        timestamp=future, quantity=1, confidence=-1)
+    future = dt.datetime.now() + dt.timedelta(minutes=1)
+    srv.filter_stations(
+        city_slug='toulouse',
+        latitude=43.6,
+        longitude=1.4333,
+        limit=1,
+        kind='bikes',
+        mode='walking',
+        moment=future,
+        desired_quantity=1,
+        confidence=-1
+    )
 
 
 def test_srv_filter_stations_prediction():
     ''' Check filter_stations service works as expected with a prediction. '''
-    future = (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
-    stations = srv.filter_stations('toulouse', 43.6, 1.4333, 1, kind='bikes',
-                                   mode='walking', timestamp=future, quantity=1,
-                                   confidence=0.5,)
+    future = dt.datetime.now() + dt.timedelta(minutes=1)
+    stations = srv.filter_stations(
+        city_slug='toulouse',
+        latitude=43.6,
+        longitude=1.4333,
+        limit=1,
+        kind='bikes',
+        mode='walking',
+        moment=future,
+        desired_quantity=1,
+        confidence=0.5
+    )
     assert len(stations) == 1
 
 
 def test_srv_find_closest_city():
     ''' Check find_closest_city service works. '''
-    city = srv.find_closest_city(43.6, 1.4333)
+    city = srv.find_closest_city(latitude=43.6, longitude=1.4333)
     assert city['name'] == 'Toulouse'
 
 
 def test_srv_find_closest_station():
     ''' Check find_closest_station service works. '''
-    station = srv.find_closest_station(43.6, 1.4333)
+    station = srv.find_closest_station(latitude=43.6, longitude=1.4333)
     assert station['name'] == '00079 - PLACE LANGE'
 
 

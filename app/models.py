@@ -1,5 +1,4 @@
 import json
-import math
 
 from geoalchemy2 import Geometry
 import pandas as pd
@@ -9,8 +8,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
+from app import util
 from app.database import Model
-from training import util
+from training.util import check_regressor_exists, load_regressor
 from training import munging
 
 
@@ -63,35 +63,44 @@ class Station(Model):
 
     training = relationship('Training', uselist=False)
 
-    predictions = relationship('Prediction', back_populates='station', lazy='dynamic', passive_deletes=True)
+    forecasts = relationship('Forecast', back_populates='station', lazy='dynamic', passive_deletes=True)
 
     def __repr__(self):
         return '<Station {}>'.format(self.name)
 
-    def predict(self, kind, date):
+    @property
+    def has_regressor(self):
+        '''
+        Returns a boolean indicating if the station has an associated regressor (`True`) or not
+        (`False`).
+        '''
+        return check_regressor_exists(self.city.slug, self.slug)
+
+    def predict(self, kind, moment):
         '''
         Predict the number of bikes/spaces at a certain date.
 
         Args:
             kind (str): Indicate if the predict is for "bikes" or "spaces".
-            date (datetime.datetime): Indicate at which time the prediction
-                should be made for. Corresponding features will be fetched.
+            moment (datetime.datetime): Indicate at which time the prediction should be made for.
+                Corresponding features will be fetched.
 
         Returns:
             float: The prediction.
         '''
-        regressor = util.load_regressor(self.city.slug, self.slug)
-        features = munging.prepare(pd.DataFrame(index=[date]))
+        regressor = load_regressor(self.city.slug, self.slug)
+        features = munging.prepare(pd.DataFrame(index=[moment]))
         bikes = regressor.predict(features)[0]
+
         # Docks = bikes + spaces
         if kind == 'spaces':
             return self.docks - bikes
         return bikes
 
-    def distance(self, lat, lon):
+    def distance(self, latitude, longitude):
         '''
-        Calculate the great-circle distance from the station to a given point
-        defined by it's longitudinal position.
+        Calculate the great-circle distance from the station to a given point defined by it's
+        longitudinal position.
 
         Args:
             lat (float): Decimal latitude of the point.
@@ -100,18 +109,8 @@ class Station(Model):
         Returns:
             float: The distance in meters.
         '''
-        # Convert decimal degrees to radians
-        lat1, lon1, lat2, lon2 = map(
-            math.radians,
-            [self.latitude, self.longitude, lat, lon]
-        )
-        # Apply Haversine formula
-        a = (math.sin((lat2 - lat1) / 2) ** 2 +
-             math.cos(lat1) * math.cos(lat2) * math.sin((lon2 - lon1) / 2) ** 2)
-        c = 2 * math.asin(math.sqrt(a))
-        # 6371000 meters is the mean radius of the Earth
-        distance = 6371000 * c
-        return distance
+
+        return util.compute_haversine_distance(self.latitude, self.longitude, latitude, longitude)
 
 
 class Training(Model):
@@ -130,22 +129,23 @@ class Training(Model):
         return '<Training for {} on {}>'.format(self.station, self.moment)
 
 
-class Prediction(Model):
-    __tablename__ = 'predictions'
+class Forecast(Model):
+    __tablename__ = 'forecasts'
 
-    at = Column(DateTime, nullable=False, index=True)
+    at = Column(DateTime, nullable=False, index=True) # When the forecast was made at
     id = Column(Integer, primary_key=True, autoincrement=True)
     kind = Column(String, CheckConstraint("kind IN ('bikes', 'spaces')"), nullable=False, index=True)
-    moment = Column(DateTime, nullable=False, index=True)
-    observed = Column(Integer, CheckConstraint('0 < observed'))
-    predicted = Column(Integer, CheckConstraint('0 < predicted'), nullable=False, index=True)
+    moment = Column(DateTime, nullable=False, index=True) # When the forecast was made for
+    observed = Column(Integer, CheckConstraint('0 <= observed'))
+    predicted = Column(Integer, CheckConstraint('0 <= predicted'), nullable=False, index=True)
+    expected_error = Column(Float, CheckConstraint('0 <= expected_error'), nullable=False, index=True)
 
-    station = relationship('Station', back_populates='predictions')
+    station = relationship('Station', back_populates='forecasts')
     station_id = Column(Integer, ForeignKey('stations.id', ondelete='CASCADE'), nullable=False, index=True)
 
     __table_args__ = (
-        CheckConstraint('at <= moment', name='ck_prediction_time_coherence'),
+        CheckConstraint('at <= moment', name='ck_forecast_time_coherence'),
     )
 
     def __repr__(self):
-        return '<Prediction of {} for {} on {}>'.format(self.kind, self.station, self.date)
+        return '<Forecast of {} for {} on {}>'.format(self.kind, self.station, self.moment)

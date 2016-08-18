@@ -1,7 +1,7 @@
 beautifulsoup4==4.4.1
 click==6.6
 Cython==0.23.4
-Flask==0.10.1
+flask==0.11.1
 Flask-Script==2.0.5
 Flask-SQLAlchemy==2.1
 GeoAlchemy2==0.2.6
@@ -22,3 +22,4 @@ structlog==16.1.0
 termcolor==1.1.0
 tzlocal==1.2.2
 unidecode==0.4.19
+voluptuous==0.9.3

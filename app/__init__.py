@@ -5,7 +5,7 @@ import sys
 import time
 
 from flask import Flask, request, session
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
@@ -15,14 +15,11 @@ app = Flask(__name__, static_folder='static', static_url_path='')
 app.config.from_object('app.config_common')
 app.config.from_object('app.config')
 
-
 # Create an SQLAlchemy binding
 db = SQLAlchemy(app)
 
-
 # Add the top level to the import path
 sys.path.append('..')
-
 
 # Import the views
 from app.views import (
@@ -31,19 +28,21 @@ from app.views import (
 )
 app.register_blueprint(api.API_BP)
 
-
 # Setup the logger
 from app.logger_setup import logger
 
-
 # Setup the database
-from app.database import db_session
+from app.database import db_session_maker
+
+# Create the necessary folders if they don't exist
+if not os.path.exists(app.config['REGRESSORS_FOLDER']):
+    os.makedirs(app.config['REGRESSORS_FOLDER'])
 
 
 # Configure session shutdown
 @app.teardown_appcontext
 def shutdown_session(exception=None):
-    db_session.remove()
+    db_session_maker.remove()
 
 
 @app.before_request
@@ -68,12 +67,9 @@ def after_request(response):
         status_code=response.status_code
     )
 
-    # Parse request data
+    # Try to serialize the request data into the log entry
     if request.data:
-        try:
-            log = log.bind(data=json.loads(request.data))
-        except ValueError:
-            log = log.bind(data=request.data)
+        log = log.bind(data=request.get_json(silent=True))
 
     # Measure response time
     log = log.bind(response_time=round(time.time() - request.start_time, 5))
@@ -106,8 +102,3 @@ def after_cursor_execute(conn, cursor, statement, parameters, context, executema
     else:
         request.queries_count = 1
         request.queries_duration = elapsed_time
-
-
-# Create the necessary folders if they don't exist
-if not os.path.exists(app.config['REGRESSORS_FOLDER']):
-    os.makedirs(app.config['REGRESSORS_FOLDER'])

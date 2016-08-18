@@ -2,14 +2,14 @@ import datetime as dt
 
 from app import logger
 from app import models
-from app.database import db_session
+from app.database import db_session_maker
 from collecting import collect, util
 from mongo.timeseries import insert as insert_bikes
 
 
 def fetch_data(city):
     ''' Fetch the bikes data for a city. '''
-
+    session = db_session_maker()
     # Get the current data for a city
     try:
         stations = collect(city.provider, city.name_api)
@@ -22,7 +22,7 @@ def fetch_data(city):
     # Save the data for the map
     city.geojson = util.json_to_geojson(stations)
     city.update = dt.datetime.now()
-    db_session.commit()
+    session.commit()
 
 
 cities = models.City.query.filter_by(active=True)

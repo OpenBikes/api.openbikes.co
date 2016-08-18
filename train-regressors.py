@@ -5,7 +5,7 @@ import numpy as np
 
 from app import logger
 from app import models
-from app.database import db_session
+from app.database import db_session_maker
 from mongo.timeseries import query
 from training import munging
 from training import util
@@ -47,7 +47,7 @@ def optimize(regressor, training):
             since=since.date(),
             until=now.date()
         )
-        return False
+        return None
     # Run a grid search to obtain a regressor
     df = munging.prepare(data)
     best = {
@@ -94,26 +94,25 @@ def optimize(regressor, training):
         best['regressor'] = regressor
         return best
     except ValueError:
-        return False
+        return None
 
 
 def train(station):
     ''' Train a regressor for a station and save it. '''
+    session = db_session_maker()
     method = DecisionTreeRegressor(max_depth=6)
     # Train a regressor for the bikes and another one the spaces
     best = optimize(method, station.training)
-    if best == False:
+    if not best:
         return
     # Update the database
     station.training.moment = best['moment']
     station.training.backward = best['backward']
     station.training.forward = forward
     station.training.error = best['score']
-    db_session.commit()
+    session.commit()
     # Save the regressor
-    util.save_regressor(best['regressor'],
-                        station.city.slug,
-                        station.slug)
+    util.save_regressor(best['regressor'], station.city.slug, station.slug)
 
 
 stations = models.Station.query
