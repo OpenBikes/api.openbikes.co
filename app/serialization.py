@@ -13,13 +13,12 @@ def serialize_city(city):
 
 def serialize_forecast(forecast):
     return {
-        'station_name': forecast.station.name,
-        'station_slug': forecast.station.slug,
-        'kind': forecast.kind,
         'at': forecast.at.isoformat(),
+        'expected_error': forecast.expected_error,
+        'kind': forecast.kind,
         'moment': forecast.moment.isoformat(),
         'predicted': forecast.predicted,
-        'expected_error': forecast.expected_error
+        'station': serialize_station(forecast.station)
     }
 
 

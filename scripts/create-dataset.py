@@ -1,10 +1,10 @@
 '''
-This script creates a directory named after a city in the same directory where
-this script is launched from. The created directory contains:
+This script creates a directory named after a city in the same directory it is launched from. The
+created directory contains:
 
-- A directory containing a .csv file for each station.
-- A .csv file containing city's weather entries.
-- A .csv file containing the coordinates of each station.
+- A sub-directory containing a CSV file for each station.
+- A CSV file containing city's weather entries.
+- A CSV file containing the coordinates of each station.
 
 The datasets are made up with all the data on the local machine.
 
