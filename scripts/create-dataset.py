@@ -10,7 +10,7 @@ The datasets are made up with all the data on the local machine.
 
 This script has to be run from the root of this repository (next to `run.py`).
 
-Example usage: `python scripts/create-dataset.py Toulouse`
+Example usage: `python create-dataset.py Toulouse`
 '''
 
 import argparse

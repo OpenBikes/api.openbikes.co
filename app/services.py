@@ -129,7 +129,7 @@ def get_providers(country=None):
 
 
 def get_cities(name=None, slug=None, country=None, provider=None, predictable=False, active=False,
-               as_query=False):
+               as_query=False, serialized=True):
     '''
     Filter and return a dictionary or query of cities.
 
@@ -175,10 +175,13 @@ def get_cities(name=None, slug=None, country=None, provider=None, predictable=Fa
     if as_query:
         return query
     else:
-        return (serialize_city(city) for city in query)
+        if serialized:
+            return (serialize_city(city) for city in query)
+        else:
+            return (city for city in query)
 
 
-def get_stations(name=None, slug=None, city_slug=None, as_query=False):
+def get_stations(name=None, slug=None, city_slug=None, as_query=False, serialized=True):
     '''
     Filter and return a dictionary or query of stations.
 
@@ -209,7 +212,10 @@ def get_stations(name=None, slug=None, city_slug=None, as_query=False):
     if as_query:
         return query
     else:
-        return (serialize_station(station) for station in query)
+        if serialized:
+            return (serialize_station(station) for station in query)
+        else:
+            return (station for station in query)
 
 
 def get_updates(city_slug=None, as_query=False):
@@ -461,7 +467,7 @@ def get_metrics():
     '''
     nbr_providers = sum(1 for _ in get_providers())
     nbr_countries = sum(1 for _ in get_countries())
-    nbr_cities = sum(1 for _ in get_cities())
-    nbr_stations = sum(1 for _ in get_stations())
+    nbr_cities = sum(1 for _ in get_cities(serialized=False))
+    nbr_stations = sum(1 for _ in get_stations(serialized=False))
 
     return nbr_providers, nbr_countries, nbr_cities, nbr_stations

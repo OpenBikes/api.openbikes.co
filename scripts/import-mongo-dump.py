@@ -9,7 +9,7 @@ the local database with the remote database.
 
 This script has to be run from the root of this repository (next to `run.py`).
 
-Example usage: `python scripts/import-mongo-dump.py Toulouse`
+Example usage: `python import-mongo-dump.py Toulouse`
 '''
 
 import argparse
