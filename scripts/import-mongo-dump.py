@@ -16,6 +16,7 @@ import argparse
 import time
 
 from pymongo import MongoClient
+from tqdm import tqdm
 
 from mongo.utils import create_remote_connexion
 from scripts import util
@@ -43,8 +44,7 @@ def fetch(city_name, local, remote):
     total = cursor.count()
     util.notify('Fetched {0} document(s)'.format(total), 'cyan', START_TIME)
     # Insert it locally
-    for i, cur in enumerate(cursor):
-        util.notify('Inserting document {0} out of {1}'.format(i + 1, total), 'cyan', START_TIME)
+    for i, cur in tqdm(enumerate(cursor)):
         local.insert(cur)
     util.notify('Done', 'green')
 
