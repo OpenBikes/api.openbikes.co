@@ -10,7 +10,7 @@ The datasets are made up with all the data on the local machine.
 
 This script has to be run from the root of this repository (next to `run.py`).
 
-Example usage: `python create-dataset.py Toulouse`
+Example usage: `python scripts/create-dataset.py Toulouse`
 '''
 
 import argparse
@@ -24,46 +24,49 @@ from app import services as srv
 from app.exceptions import CityNotFound, CityUnpredicable
 from mongo.weather import query as weather
 from mongo.timeseries import query as ts
+from scripts import util
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('city', type=str, help='City for which to import data')
-parameters = parser.parse_args()
+PARSER = argparse.ArgumentParser()
+PARSER.add_argument('city', type=str, help='City for which to import data')
+PARAMS = PARSER.parse_args()
 
 # Make sure the city exists
 try:
-    city = next(srv.get_cities(name=parameters.city))
+    CITY = next(srv.get_cities(name=PARAMS.city))
 except CityNotFound as exc:
-    print(exc)
-    sys.exit()
+    util.notify(exc, 'red')
 
 # Make sure the city is predictable
-if city['predictable'] is False:
-    raise CityUnpredicable
-    sys.exit()
+if not CITY['predictable']:
+    util.notify(CityUnpredicable, 'red')
 
 # Create the necessary folders if they don't exist
-if not os.path.exists(city['slug']):
-    os.makedirs(city['slug'])
-if not os.path.exists(os.path.join(city['slug'], 'stations/')):
-    os.makedirs(os.path.join(city['slug'], 'stations/'))
+if not os.path.exists(CITY['slug']):
+    os.makedirs(CITY['slug'])
+if not os.path.exists(os.path.join(CITY['slug'], 'stations/')):
+    os.makedirs(os.path.join(CITY['slug'], 'stations/'))
 
 # Save the coordinates of each station
-coordinates = pd.DataFrame(list(srv.get_stations(city=city['name'])))
-coordinates.to_csv(os.path.join(city['slug'], 'coordinates.csv'), index=False)
+COORDINATES = pd.DataFrame(list(srv.get_stations(city_slug=CITY['slug'])))
+COORDINATES.to_csv(os.path.join(CITY['slug'], 'coordinates.csv'), index=False)
 
 # Save the data for each station
-stations = srv.get_stations(city=city['name'])
+STATIONS = srv.get_stations(city_slug=CITY['slug'])
 
-for station in stations:
-    df = ts.station(city['name'],
-                    station['name'],
-                    since=dt.datetime(year=1900, month=1, day=1),
-                    until=dt.datetime.now())
-    df.to_csv(os.path.join(city['slug'], 'stations/', '{}.csv'.format(station['slug'])))
+for station in STATIONS:
+    df = ts.station(
+        city=CITY['name'],
+        station=station['name'],
+        since=dt.datetime(year=1900, month=1, day=1),
+        until=dt.datetime.now()
+    )
+    df.to_csv(os.path.join(CITY['slug'], 'stations/', '{}.csv'.format(station['slug'])))
 
 # Save the weather data
-df = weather.fetch(city['name'],
-                   since=dt.datetime(year=1900, month=1, day=1),
-                   until=dt.datetime.now())
-df.to_csv(os.path.join(city['slug'], 'weather.csv'))
+WEATHER = weather.fetch(
+    city=CITY['name'],
+    since=dt.datetime(year=1900, month=1, day=1),
+    until=dt.datetime.now()
+)
+WEATHER.to_csv(os.path.join(CITY['slug'], 'weather.csv'))
