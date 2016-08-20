@@ -23,7 +23,6 @@ def rename_columns(dataframe):
         's': 'spaces'
     }
     dataframe.rename(columns=shortcuts, inplace=True)
-    return dataframe
 
 
 def station(city, station, since, until):
@@ -64,7 +63,7 @@ def station(city, station, since, until):
         except:
             pass
     # Rename the columns
-    dataframe = rename_columns(dataframe)
+    rename_columns(dataframe)
     # Drop the duplicates dates if they exist
     dataframe = dataframe.groupby(dataframe.index).first()
     return dataframe
@@ -108,5 +107,5 @@ def city(city, year='\d{4}', month='\d{1,2}', day='\d{1,2}'):
                 stations_dfs[station] = df
     # Rename the columns
     for station in stations_dfs.keys():
-        stations_dfs[station] = rename_columns(stations_dfs[station])
+        rename_columns(stations_dfs[station])
     return stations_dfs

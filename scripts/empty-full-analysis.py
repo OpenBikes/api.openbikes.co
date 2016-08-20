@@ -12,46 +12,34 @@ import datetime as dt
 
 import pandas as pd
 
-from mongo.timeseries import query as ts
+from app import services as srv
+from mongo.timeseries import query
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('city', type=str, help='City for which to run the analysis')
-parameters = parser.parse_args()
+PARSER = argparse.ArgumentParser()
+PARSER.add_argument('city', type=str, help='City for which to run the analysis')
+PARAMS = PARSER.parse_args()
 
-SINCE = dt.datetime(year=1900, month=1, day=1)
+SINCE = dt.datetime(year=2015, month=10, day=1)
 UNTIL = dt.datetime.now()
-PERIOD = 'D'
-PERIOD_DURATION = pd.to_timedelta(dt.timedelta(days=1))
+# Generate all the dates between SINCE and UNTIL
+DAYS = [SINCE + dt.timedelta(days=d) for d in range((UNTIL - SINCE).days + 1)]
 
+city = next(srv.get_cities(name=PARAMS.city, serialized=False))
+stations = list(srv.get_stations(city_slug=city.slug, serialized=False))
 
-stations = ts.city(parameters.city)
+empty = pd.DataFrame(index=DAYS, columns=(station.name for station in stations))
+full = pd.DataFrame(index=DAYS, columns=(station.name for station in stations))
 
+for station in stations:
+    df = query.station(city.name, station.name, SINCE, UNTIL)
+    df['moment'] = df.index
+    df['day'] = df['moment'].apply(lambda x: x.date().isoformat())
+    # Extract the time between each observation
+    df['duration'] = df['moment'].diff().shift(-1)
+    for day, group in df.groupby('day'):
+        empty[station.name][day] = group[group['bikes'] == 0]['duration'].sum()
+        full[station.name][day] = group[group['spaces'] == 0]['duration'].sum()
 
-
-# def count_down_time(df, col):
-#     df['date'] = df.index
-#     df['duration'] = df['date'].shift(-1) - df['date']
-#     df['duration'] = pd.to_timedelta(df['duration'])
-#     # Count down time per day
-#     down_time = df[df[col] == 0]['duration'].resample(PERIOD, how='sum').fillna(0)
-#     down_time = down_time.apply(lambda x: min(x / PERIOD_DURATION, 1))
-#     return down_time
-
-# empty = {
-#     key: count_down_time(value, 'bikes')
-#     for key, value in stations.items()
-# }
-# df = pd.DataFrame(columns=empty.keys())
-# for key, value in empty.items():
-#     df[key] = value
-# df.to_csv('empty.csv')
-
-# full = {
-#     key: count_down_time(value, 'spaces')
-#     for key, value in stations.items()
-# }
-# df = pd.DataFrame(columns=full.keys())
-# for key, value in full.items():
-#     df[key] = value
-# df.to_csv('full.csv')
+empty.dropna(how='all').fillna(pd.Timedelta(0)).applymap(lambda x: x.seconds).to_csv('empty.csv')
+full.dropna(how='all').fillna(pd.Timedelta(0)).applymap(lambda x: x.seconds).to_csv('full.csv')

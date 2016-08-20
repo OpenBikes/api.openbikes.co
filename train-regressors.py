@@ -35,10 +35,12 @@ def optimize(regressor, training):
     since = then - dt.timedelta(days=max(backwards))
     # Get all the necessary data
     try:
-        data = query.station(training.station.city.name,
-                             training.station.name,
-                             since=since,
-                             until=now)
+        data = query.station(
+            training.station.city.name,
+            training.station.name,
+            since=since,
+            until=now
+        )
     except:
         logger.info(
             'No data available',
