@@ -18,7 +18,7 @@ def test_api_geojson_valid_city():
 def test_api_geojson_invalid_city():
     ''' Check api_geojson handles an invalid city. '''
     response = client.get('/geojson/xyz')
-    assert response.status_code == 400
+    assert response.status_code == 412
 
 
 def test_api_countries_valid_parameters():
@@ -70,7 +70,7 @@ def test_api_forecast_invalid_city():
         'moment': (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
     }
     response = client.post('/forecast', data=json.dumps(payload))
-    assert response.status_code == 400
+    assert response.status_code == 412
 
 
 def test_api_forecast_invalid_station():
@@ -82,7 +82,7 @@ def test_api_forecast_invalid_station():
         'moment': (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
     }
     response = client.post('/forecast', data=json.dumps(payload))
-    assert response.status_code == 400
+    assert response.status_code == 412
 
 
 def test_api_forecast_invalid_kind():
@@ -112,7 +112,7 @@ def test_api_forecast_city_disabled():
         'moment': (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
     }
     response = client.post('/forecast', data=json.dumps(payload))
-    assert response.status_code == 400
+    assert response.status_code == 412
     # Tear down
     city = models.City.query.filter_by(name='Toulouse').first()
     city.active = True
@@ -134,7 +134,7 @@ def test_api_forecast_city_unpredicable():
         'moment': (dt.datetime.now() + dt.timedelta(minutes=1)).timestamp()
     }
     response = client.post('/forecast', data=json.dumps(payload))
-    assert response.status_code == 400
+    assert response.status_code == 412
     # Tear down
     city = models.City.query.filter_by(name='Toulouse').first()
     city.predictable = True
@@ -202,7 +202,7 @@ def test_api_filtered_invalid_city():
         'limit': 1
     }
     response = client.post('/filtered_stations', data=json.dumps(payload))
-    assert response.status_code == 400
+    assert response.status_code == 412
 
 
 def test_api_closest_city():

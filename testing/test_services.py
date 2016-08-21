@@ -23,9 +23,8 @@ def test_srv_geojson_city_not_found():
 
 def test_srv_geojson_success():
     ''' Check geojson service works with a valid city. '''
-    geojson, update = srv.geojson('toulouse')
+    geojson = srv.geojson('toulouse')
     assert isinstance(geojson, dict)
-    assert isinstance(update, dt.datetime)
 
 
 def test_srv_get_countries_nil():

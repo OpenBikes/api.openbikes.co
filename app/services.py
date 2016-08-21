@@ -50,8 +50,10 @@ def insert_stations(city, stations, altitudes):
             latitude=altitude['location']['lat'],
             longitude=altitude['location']['lng'],
             name=station['name'],
-            position='POINT({0} {1})'.format(altitude['location']['lat'],
-                                             altitude['location']['lng']),
+            position='POINT({latitude} {longitude})'.format(
+                latitude=altitude['location']['lat'],
+                longitude=altitude['location']['lng']
+            ),
             slug=util.slugify(station['name'])
         )
         session.add(new_station)
@@ -76,14 +78,19 @@ def geojson(city_slug):
 
     Returns:
         dict: The latest geojson file.
-        datetime: The time of most recent update.
 
     Raises:
         CityNotFound: The geojson file cannot be found.
     '''
     try:
         city = models.City.query.filter_by(slug=city_slug).first()
-        return city.geojson, city.update
+        geojson = city.geojson
+        geojson['update'] = city.update.isoformat()
+        geojson['center'] = {
+            'latitude': city.latitude,
+            'longitude': city.longitude
+        }
+        return geojson
     except:
         raise CityNotFound("'{}' not found".format(city_slug))
 

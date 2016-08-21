@@ -23,14 +23,10 @@ API_BP = Blueprint('apibp', __name__, url_prefix='')
 def api_geojson(city_slug):
     ''' Return the latest geojson file of a city. '''
     try:
-        geojson, update = srv.geojson(city_slug)
-        try:
-            geojson['update'] = update.isoformat()
-        except TypeError:
-            pass
+        geojson = srv.geojson(city_slug)
         return jsonify(geojson)
     except CityNotFound:
-        abort(400)
+        abort(412)
 
 
 @API_BP.route('/countries', methods=['GET'])
@@ -78,7 +74,7 @@ def api_stations():
     ''' Return the list of stations. '''
     stations = list(srv.get_stations(
         city_slug=request.args.get('city_slug'),
-        slug=request.args.get('city_slug')
+        slug=request.args.get('station_slug')
     ))
     return jsonify({
         'stations': stations,
@@ -99,7 +95,7 @@ def api_updates():
             'count': len(updates)
         })
     except CityNotFound:
-        abort(400)
+        abort(412)
 
 
 @API_BP.route('/forecast', methods=['POST', 'REPORT'])
@@ -120,7 +116,7 @@ def api_forecast():
         response = srv.make_forecast(**data)
         return jsonify(response)
     except (InvalidKind, CityNotFound, StationNotFound, CityInactive, CityUnpredicable):
-        abort(400)
+        abort(412)
 
 
 @API_BP.route('/filtered_stations', methods=['POST', 'REPORT'])
@@ -145,7 +141,7 @@ def api_filtered_stations():
     try:
         return jsonify(list(srv.filter_stations(**data)))
     except (InvalidKind, CityNotFound, CityInactive, CityUnpredicable):
-        abort(400)
+        abort(412)
 
 
 @API_BP.route('/closest_city/<float:latitude>/<float:longitude>', methods=['GET'])
@@ -169,13 +165,10 @@ def api_closest_station(latitude, longitude):
 def api_metrics():
     ''' Returns latest metrics. '''
     nbr_providers, nbr_countries, nbr_cities, nbr_stations = srv.get_metrics()
-    try:
-        response = {
-            'providers': nbr_providers,
-            'countries': nbr_countries,
-            'cities': nbr_cities,
-            'stations': nbr_stations
-        }
-        return jsonify(response)
-    except:
-        return 400
+    response = {
+        'providers': nbr_providers,
+        'countries': nbr_countries,
+        'cities': nbr_cities,
+        'stations': nbr_stations
+    }
+    return jsonify(response)

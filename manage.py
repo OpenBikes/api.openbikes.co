@@ -79,7 +79,7 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
         name=city,
         name_api=city_api,
         name_owm=city_owm,
-        position='POINT({0} {1})'.format(mean_lat, mean_lon),
+        position='POINT({latitude} {longitude})'.format(latitude=mean_lat, longitude=mean_lon),
         predictable=predictable,
         provider=provider,
         slug=util.slugify(city),
@@ -108,7 +108,7 @@ def removecity(city):
 
 
 @manager.command
-def refreshcity(city):
+def updatecity(city):
     ''' Refresh a city in the application '''
     session = db_session_maker()
     # Check if the city is not in the database
@@ -123,6 +123,13 @@ def refreshcity(city):
     except:
         print(colored("Couldn't get stations data for '{}'".format(city.name), 'red'))
         return
+    # Recalculate the center of the city
+    mean_lat = np.mean([station['latitude'] for station in stations])
+    mean_lon = np.mean([station['longitude'] for station in stations])
+    city.latitude = mean_lat
+    city.longitude = mean_lon
+    city.position = 'POINT({latitude} {longitude})'.format(latitude=mean_lat, longitude=mean_lon)
+    session.commit()
     # Delete the stations that don't exist anymore
     new_station_names = [station['name'] for station in stations]
     existing_stations = models.Station.query.filter_by(city_id=city.id)
@@ -141,15 +148,13 @@ def refreshcity(city):
         for station in stations
         if station['name'] not in old_station_names
     ]
-    # Add the altitudes of every station
     try:
         altitudes = google.fetch_altitudes(new_stations)
     except:
         print(colored("Couldn't get altitudes for '{}'".format(city.name), 'red'))
         return
-    # Add the stations and their initial training schedules
-    srv.insert_stations(city.id, stations, altitudes)
-    print(colored("'{}' stations have been updated, {} insertion(s), {} deletion(s)".format(
+    srv.insert_stations(city, new_stations, altitudes)
+    print(colored("'{}' has been updated, {} insertion(s), {} deletion(s)".format(
         city.name, len(new_stations), len(stations_to_delete)
     ), 'green'))
 
