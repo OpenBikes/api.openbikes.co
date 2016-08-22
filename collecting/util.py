@@ -2,6 +2,8 @@ import datetime as dt
 
 from bs4 import BeautifulSoup
 
+from app.util import slugify
+
 
 def json_to_geojson(json_object):
     ''' Convert to a format readable by Leaflet. '''
@@ -15,7 +17,10 @@ def json_to_geojson(json_object):
                     'type': 'Point',
                     'coordinates': [entry['longitude'], entry['latitude']]
                 },
-                'properties': entry,
+                'properties': {
+                    **entry,
+                    **{'slug': slugify(entry['name'])}
+                },
             } for entry in json_object
         ]
     }
