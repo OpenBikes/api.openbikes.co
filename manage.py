@@ -1,27 +1,14 @@
-import datetime as dt
-
 from flask_script import Manager, prompt_bool, Shell, Server
-import numpy as np
 from termcolor import colored
 
 from app import app
-from app import models
-from app import services as srv
-from app import util
-from app.database import init_db, drop_db, db_session_maker
-from collecting import collect, google
-from collecting import util as collect_util
 
 
 manager = Manager(app)
-
-
 manager.add_command('runserver', Server())
-
 
 def make_shell_context():
     return dict(app=app)
-
 
 manager.add_command('shell', Shell(make_context=make_shell_context))
 
@@ -29,6 +16,8 @@ manager.add_command('shell', Shell(make_context=make_shell_context))
 @manager.command
 def initdb():
     ''' Create the SQL database '''
+    from app.database import init_db
+
     init_db()
     print(colored('The SQL database has been created', 'green'))
 
@@ -36,12 +25,13 @@ def initdb():
 @manager.command
 def dropdb():
     ''' Delete the SQL database. '''
+    from app.database import drop_db
+
     if prompt_bool('Are you sure you want to lose all your SQL data?'):
         drop_db()
         print(colored('The SQL database has been deleted', 'green'))
 
 
-@util.timethisfunc
 @manager.option('-f', dest='provider', help='API provider script name')
 @manager.option('-c', dest='city', help='City name')
 @manager.option('-a', dest='city_api', help='City API name')
@@ -50,6 +40,17 @@ def dropdb():
 @manager.option('-e', dest='predictable', help='Predictions enabled flag', default=False)
 def addcity(provider, city, city_api, city_owm, country, predictable):
     ''' Add a city to the application '''
+    import datetime as dt
+
+    import numpy as np
+
+    from app import models
+    from app import services as srv
+    from app import util
+    from app.database import db_session_maker
+    from collecting import util as collect_util
+    from collecting import collect, google
+
     session = db_session_maker()
     # Check if the city is already in the database
     if models.City.query.filter_by(name=city).count() > 0:
@@ -95,6 +96,9 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
 @manager.command
 def removecity(city):
     ''' Remove a city in the application '''
+    from app import models
+    from app.database import db_session_maker
+
     session = db_session_maker()
     # Check if the city is not in the database
     query = models.City.query.filter_by(name=city)
@@ -110,6 +114,12 @@ def removecity(city):
 @manager.command
 def updatecity(city):
     ''' Refresh a city in the application '''
+    import numpy as np
+
+    from app import models
+    from app import services as srv
+    from app.database import db_session_maker
+
     session = db_session_maker()
     # Check if the city is not in the database
     query = models.City.query.filter_by(name=city)
@@ -162,6 +172,9 @@ def updatecity(city):
 @manager.command
 def disablecity(city):
     ''' Disable a city from the application '''
+    from app import models
+    from app.database import db_session_maker
+
     session = db_session_maker()
     # Check if the city is not in the database
     query = models.City.query.filter_by(name=city)
@@ -181,6 +194,9 @@ def disablecity(city):
 @manager.command
 def enablecity(city):
     ''' Enable a city in the application '''
+    from app import models
+    from app.database import db_session_maker
+
     session = db_session_maker()
     # Check if the city is not in the database
     query = models.City.query.filter_by(name=city)
@@ -195,6 +211,63 @@ def enablecity(city):
     city.active = True
     session.commit()
     print(colored("'{}' has been enabled".format(city), 'green'))
+
+
+@manager.command
+def collectbikes():
+    ''' Collect the bikes data for each active city. '''
+    import datetime as dt
+
+    from app import logger
+    from app import models
+    from app.database import db_session_maker
+    from collecting import collect, util
+    from mongo.timeseries import insert as insert_bikes
+
+    session = db_session_maker()
+
+    cities = models.City.query.filter_by(active=True)
+
+    for city in cities:
+        # Get the current data for a city
+        try:
+            stations = collect(city.provider, city.name_api)
+        except:
+            logger.warning("Couldn't retrieve station data", city=city.name)
+            return
+        # Update the database if the city can be predicted
+        if city.predictable is True:
+            insert_bikes.city(city.name, stations)
+        # Save the data for the map
+        city.geojson = util.json_to_geojson(stations)
+        city.update = dt.datetime.now()
+        session.commit()
+
+    logger.info('Bike data collected')
+
+
+@manager.command
+def collectweather():
+    ''' Collect the weather data for each active, predictable city. '''
+    from app import logger
+    from app import models
+    from app.database import db_session_maker
+    from collecting import openweathermap as owm
+    from mongo.weather import insert as insert_weather
+
+    session = db_session_maker()
+
+    cities = models.City.query.filter_by(active=True, predictable=True)
+
+    for city in cities:
+        try:
+            weather = owm.current(city.name_owm)
+        except:
+            logger.warning("Couldn't retrieve weather data", city=city.name)
+            return
+        insert_weather.city(city.name, weather)
+
+    logger.info('Weather data collected')
 
 
 if __name__ == '__main__':
