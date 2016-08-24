@@ -251,11 +251,8 @@ def collectweather():
     ''' Collect the weather data for each active, predictable city. '''
     from app import logger
     from app import models
-    from app.database import db_session_maker
     from collecting import openweathermap as owm
     from mongo.weather import insert as insert_weather
-
-    session = db_session_maker()
 
     cities = models.City.query.filter_by(active=True, predictable=True)
 
@@ -268,6 +265,40 @@ def collectweather():
         insert_weather.city(city.name, weather)
 
     logger.info('Weather data collected')
+
+
+@manager.command
+def train():
+    ''' Train a regressor for a station and save it. '''
+    from sklearn.tree import DecisionTreeRegressor
+
+    from app import logger
+    from app import models
+    from app.database import db_session_maker
+    from training import util
+    from training.optimization import bandit
+
+    session = db_session_maker()
+
+    method = DecisionTreeRegressor(max_depth=6)
+
+    stations = models.Station.query
+
+    for station in stations:
+        # Train a regressor for the bikes and another one the spaces
+        best = bandit(method, station.training)
+        if not best:
+            return
+        # Update the database
+        station.training.moment = best['moment']
+        station.training.backward = best['backward']
+        station.training.forward = best['forward']
+        station.training.error = best['score']
+        session.commit()
+        # Save the regressor
+        util.save_regressor(best['regressor'], station.city.slug, station.slug)
+
+    logger.info('Regressors trained')
 
 
 if __name__ == '__main__':

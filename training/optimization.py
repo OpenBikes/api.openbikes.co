@@ -1,38 +1,24 @@
 import datetime as dt
 
-from sklearn.tree import DecisionTreeRegressor
 import numpy as np
 
 from app import logger
-from app import models
-from app.database import db_session_maker
 from mongo.timeseries import query
 from training import munging
-from training import util
 
 
-forward = 7
-
-
-def training_days(current):
-    ''' Set a new number of training days to search through. '''
-    delta = 7
-    lower = max(current - delta, 1)
-    upper = current + delta
-    days = list(range(lower, upper + 1))
-    return days
-
-
-def optimize(regressor, training):
+def bandit(regressor, training):
     ''' Search for the optimal number of training days. '''
+    forward = 7
+    delta = 7
     # Number of days on which the regressor is trained
-    backwards = training_days(training.backward)
+    backwards_days = list(range(max(training.backward - 7, 1), training.backward + delta + 1))
     # Current time
     now = dt.datetime.now()
     # A week ago
     then = now - dt.timedelta(days=forward)
     # Longest time ago
-    since = then - dt.timedelta(days=max(backwards))
+    since = then - dt.timedelta(days=max(backwards_days))
     # Get all the necessary data
     try:
         data = query.station(
@@ -55,10 +41,11 @@ def optimize(regressor, training):
     best = {
         'moment': now,
         'backward': training.backward,
+        'forward': forward,
         'score': np.inf
     }
     # Go through all the possible backward/forward combinations
-    for backward in backwards:
+    for backward in backwards_days:
         # Define the training timeline
         timeline = [then - dt.timedelta(days=backward), then, now]
         # Define the train and test sets
@@ -97,29 +84,3 @@ def optimize(regressor, training):
         return best
     except ValueError:
         return None
-
-
-def train(station):
-    ''' Train a regressor for a station and save it. '''
-    session = db_session_maker()
-    method = DecisionTreeRegressor(max_depth=6)
-    # Train a regressor for the bikes and another one the spaces
-    best = optimize(method, station.training)
-    if not best:
-        return
-    # Update the database
-    station.training.moment = best['moment']
-    station.training.backward = best['backward']
-    station.training.forward = forward
-    station.training.error = best['score']
-    session.commit()
-    # Save the regressor
-    util.save_regressor(best['regressor'], station.city.slug, station.slug)
-
-
-stations = models.Station.query
-
-for station in stations:
-    train(station)
-
-logger.info('Regressors trained')
