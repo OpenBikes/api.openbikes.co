@@ -1,7 +1,5 @@
 # OpenBikes API
 
-![logo](https://github.com/OpenBikes/meta/blob/master/logo.png)
-
 ## Environment variables
 
 Whatever the setup target (development or production, local or distant, with or without Docker), **add a `.env` file** with the following variables (no quotes needed).
