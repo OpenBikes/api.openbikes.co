@@ -2,10 +2,8 @@ import json
 
 from geoalchemy2 import Geometry
 import pandas as pd
-from sqlalchemy import (
-    CheckConstraint, Column, Integer, String, Boolean, DateTime, Float,
-    ForeignKey, Text
-)
+from sqlalchemy import (CheckConstraint, Column, Integer, String, Boolean, DateTime, Float,
+                        ForeignKey, Text)
 from sqlalchemy.orm import relationship
 
 from app import util
@@ -43,7 +41,10 @@ class City(Model):
         self._geojson = json.dumps(value)
 
     def __repr__(self):
-        return '<City {}>'.format(self.name)
+        return '<City #{}>'.format(self.id)
+
+    def __str__(self):
+        return '<{}>'.format(self.name)
 
 
 class Station(Model):
@@ -66,7 +67,10 @@ class Station(Model):
     forecasts = relationship('Forecast', back_populates='station', lazy='dynamic', passive_deletes=True)
 
     def __repr__(self):
-        return '<Station {}>'.format(self.name)
+        return '<Station #{}>'.format(self.id)
+
+    def __str__(self):
+        return '<{}>'.format(self.name)
 
     @property
     def has_regressor(self):
@@ -126,7 +130,10 @@ class Training(Model):
     station_id = Column(Integer, ForeignKey('stations.id', ondelete='CASCADE'), nullable=False, index=True)
 
     def __repr__(self):
-        return '<Training for {} on {}>'.format(self.station, self.moment)
+        return '<Training #{}>'.format(self.id)
+
+    def __str__(self):
+        return '<Training for {} at {}>'.format(self.station.name, self.moment)
 
 
 class Forecast(Model):
@@ -148,4 +155,7 @@ class Forecast(Model):
     )
 
     def __repr__(self):
-        return '<Forecast of {} for {} on {}>'.format(self.kind, self.station, self.moment)
+        return '<Forecast #{}>'.format(self.id)
+
+    def __str__(self):
+        return '<{} forecast for {} done for {}>'.format(self.kind.capitalize(), self.station.name, self.moment)
