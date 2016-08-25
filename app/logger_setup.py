@@ -71,10 +71,4 @@ if app.config.get('LOG_FILE'):
     app.logger.addHandler(file_handler)
 
 # Wrap the application logger with structlog to format the output
-logger = wrap_logger(
-    app.logger,
-    processors=[
-        add_fields,
-        JSONRenderer(indent=None)
-    ]
-)
+logger = wrap_logger(app.logger, processors=(add_fields, JSONRenderer(indent=None)))

@@ -2,6 +2,9 @@ import datetime as dt
 
 from scipy.stats import norm
 
+from app import db
+from app import util
+from app import models
 from app.exceptions import (
     CityNotFound,
     CityInactive,
@@ -9,10 +12,11 @@ from app.exceptions import (
     InvalidKind,
     StationNotFound
 )
-from app import util
-from app import models
-from app.database import db_session_maker
-from app.serialization import serialize_city, serialize_forecast, serialize_station
+from app.serialization import (
+    serialize_city,
+    serialize_forecast,
+    serialize_station
+)
 from collecting import google
 
 
@@ -41,7 +45,7 @@ def insert_stations(city, stations, altitudes):
     Returns:
         boolean: An indicator to make sure the insertions took place.
     '''
-    session = db_session_maker()
+    session = db.session()
     for station, altitude in zip(stations, altitudes):
         new_station = models.Station(
             altitude=altitude['elevation'],
@@ -315,7 +319,7 @@ def make_forecast(city_slug, station_slug, kind, moment, as_object=False):
         predicted=prediction,
         expected_error=station.training.error
     )
-    session = db_session_maker()
+    session = db.session()
     session.add(forecast)
     session.commit()
 

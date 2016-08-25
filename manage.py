@@ -44,14 +44,14 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
 
     import numpy as np
 
+    from app import db
     from app import models
     from app import services as srv
     from app import util
-    from app.database import db_session_maker
     from collecting import util as collect_util
     from collecting import collect, google
 
-    session = db_session_maker()
+    session = db.session()
     # Check if the city is already in the database
     if models.City.query.filter_by(name=city).count() > 0:
         print(colored("'{}' has already been added".format(city), 'cyan'))
@@ -96,10 +96,10 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
 @manager.command
 def removecity(city):
     ''' Remove a city in the application '''
+    from app import db
     from app import models
-    from app.database import db_session_maker
 
-    session = db_session_maker()
+    session = db.session()
     # Check if the city is not in the database
     query = models.City.query.filter_by(name=city)
     if query.count() == 0:
@@ -116,11 +116,11 @@ def updatecity(city):
     ''' Refresh a city in the application '''
     import numpy as np
 
+    from app import db
     from app import models
     from app import services as srv
-    from app.database import db_session_maker
 
-    session = db_session_maker()
+    session = db.session()
     # Check if the city is not in the database
     query = models.City.query.filter_by(name=city)
     if query.count() == 0:
@@ -172,10 +172,10 @@ def updatecity(city):
 @manager.command
 def disablecity(city):
     ''' Disable a city from the application '''
+    from app import db
     from app import models
-    from app.database import db_session_maker
 
-    session = db_session_maker()
+    session = db.session()
     # Check if the city is not in the database
     query = models.City.query.filter_by(name=city)
     if query.count() == 0:
@@ -194,10 +194,10 @@ def disablecity(city):
 @manager.command
 def enablecity(city):
     ''' Enable a city in the application '''
+    from app import db
     from app import models
-    from app.database import db_session_maker
 
-    session = db_session_maker()
+    session = db.session()
     # Check if the city is not in the database
     query = models.City.query.filter_by(name=city)
     if query.count() == 0:
@@ -218,13 +218,13 @@ def collectbikes():
     ''' Collect the bikes data for each active city. '''
     import datetime as dt
 
+    from app import db
     from app import logger
     from app import models
-    from app.database import db_session_maker
     from collecting import collect, util
     from mongo.timeseries import insert as insert_bikes
 
-    session = db_session_maker()
+    session = db.session()
 
     cities = models.City.query.filter_by(active=True)
 
@@ -272,13 +272,13 @@ def train():
     ''' Train a regressor for a station and save it. '''
     from sklearn.tree import DecisionTreeRegressor
 
+    from app import db
     from app import logger
     from app import models
-    from app.database import db_session_maker
     from training import util
     from training.optimization import bandit
 
-    session = db_session_maker()
+    session = db.session()
 
     method = DecisionTreeRegressor(max_depth=6)
 

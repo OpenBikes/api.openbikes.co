@@ -3,9 +3,9 @@ import types
 
 from nose.tools import raises
 
+from app import db
 from app import services as srv
 from app import models
-from app.database import db_session_maker
 from app.exceptions import (
     CityNotFound,
     CityInactive,
@@ -121,7 +121,7 @@ def test_srv_make_forecast_station_not_found():
 
 def test_srv_make_forecast_city_inactive():
     ''' Check make_forecast service raises exception on inactive city. '''
-    session = db_session_maker()
+    session = db.session()
     # Setup
     city = models.City.query.filter_by(name='Toulouse').first()
     city.active = False
@@ -144,7 +144,7 @@ def test_srv_make_forecast_city_inactive():
 
 def test_srv_make_forecast_city_unpredictable():
     ''' Check make_forecast service raises exception on unpredictable city. '''
-    session = db_session_maker()
+    session = db.session()
     # Setup
     city = models.City.query.filter_by(name='Toulouse').first()
     city.predictable = False

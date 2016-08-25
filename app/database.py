@@ -5,12 +5,6 @@ import sqlalchemy.exc
 from app import app
 from app import db
 
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=app.config['DATABASE_ECHO'])
-
-# Use Flask-Alchemy's base model
-Model = db.Model
-db_session_maker = db.session
-
 
 def init_db():
     ''' Create the database. '''
@@ -22,13 +16,14 @@ def init_db():
             conn.execute(
                 "CREATE DATABASE {} WITH encoding='utf-8'".format(name))
     # Add postgis extension
-    session = db_session_maker()
+    session = db.session()
     try:
         session.execute('CREATE EXTENSION postgis')
         session.commit()
     except sqlalchemy.exc.ProgrammingError:
         pass
-    Model.metadata.create_all(bind=engine)
+    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=app.config['DATABASE_ECHO'])
+    db.Model.metadata.create_all(bind=engine)
 
 
 def drop_db():

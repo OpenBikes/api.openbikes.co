@@ -6,13 +6,13 @@ from sqlalchemy import (CheckConstraint, Column, Integer, String, Boolean, DateT
                         ForeignKey, Text)
 from sqlalchemy.orm import relationship
 
+from app import db
 from app import util
-from app.database import Model
 from training.util import check_regressor_exists, load_regressor
 from training import munging
 
 
-class City(Model):
+class City(db.Model):
     __tablename__ = 'cities'
 
     active = Column(Boolean, nullable=False, index=True)
@@ -47,7 +47,7 @@ class City(Model):
         return '<{}>'.format(self.name)
 
 
-class Station(Model):
+class Station(db.Model):
     __tablename__ = 'stations'
 
     altitude = Column(Float, nullable=False, index=True)
@@ -117,7 +117,7 @@ class Station(Model):
         return util.compute_haversine_distance(self.latitude, self.longitude, latitude, longitude)
 
 
-class Training(Model):
+class Training(db.Model):
     __tablename__ = 'trainings'
 
     backward = Column(Integer, CheckConstraint('0 < backward'), nullable=False, index=True)
@@ -136,7 +136,7 @@ class Training(Model):
         return '<Training for {} at {}>'.format(self.station.name, self.moment)
 
 
-class Forecast(Model):
+class Forecast(db.Model):
     __tablename__ = 'forecasts'
 
     at = Column(DateTime, nullable=False, index=True) # When the forecast was made at

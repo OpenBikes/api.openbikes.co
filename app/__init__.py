@@ -1,5 +1,4 @@
 import binascii
-import json
 import os
 import sys
 import time
@@ -31,9 +30,6 @@ app.register_blueprint(api.API_BP)
 # Setup the logger
 from app.logger_setup import logger
 
-# Setup the database
-from app.database import db_session_maker
-
 # Create the necessary folders if they don't exist
 if not os.path.exists(app.config['REGRESSORS_FOLDER']):
     os.makedirs(app.config['REGRESSORS_FOLDER'])
@@ -42,7 +38,7 @@ if not os.path.exists(app.config['REGRESSORS_FOLDER']):
 # Configure session shutdown
 @app.teardown_appcontext
 def shutdown_session(exception=None):
-    db_session_maker.remove()
+    db.session.remove()
 
 
 @app.before_request
