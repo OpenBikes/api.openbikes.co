@@ -102,7 +102,7 @@ class City(db.Model):
                 }
             })
 
-    def get_updates(self, since, until):
+    def get_station_updates(self, since, until):
 
         collection = mongo_bikes_coll[self.name]
 
@@ -132,16 +132,60 @@ class City(db.Model):
             dfs.append(df)
 
         updates_df = pd.concat(dfs)
-        updates_df.set_index('m', inplace=True)
-        updates_df.groupby(updates_df.index, sort=False).first()
 
         updates_df.rename(columns={
+            'm': 'moment',
             'b': 'bikes',
             's': 'spaces',
             'n': 'station'
         }, inplace=True)
 
+        updates_df.set_index('moment', inplace=True)
+        updates_df.groupby(updates_df.index, sort=False).first()
+
         return updates_df
+
+    def get_weather_updates(self, since, until):
+
+        collection = mongo_weather_coll[self.name]
+
+        cursor = collection.find({
+            '_id': {
+                '$gte': since.isoformat(),
+                '$lte': until.isoformat()
+            }
+        })
+
+        dfs = []
+
+        for c in cursor:
+
+            date = dt.datetime.strptime(c['_id'], '%Y-%m-%d')
+
+            df = json_normalize(c, 'u', ['_id'])
+            df['m'] = df['m'].apply(lambda x: dt.datetime.combine(
+                date,
+                dt.datetime.strptime(x, '%H:%M:%S').time())
+            )
+            dfs.append(df)
+
+        weather_df = pd.concat(dfs)
+
+        weather_df.rename(columns={
+            'm': 'moment',
+            'd': 'description',
+            'p': 'pressure',
+            'h': 'humidity',
+            'w': 'wind',
+            't': 'temperature',
+            'c': 'clouds'
+        }, inplace=True)
+
+        weather_df.drop('_id', axis=1, inplace=True)
+        weather_df.set_index('moment', inplace=True)
+        weather_df.groupby(weather_df.index, sort=False).first()
+
+        return weather_df
 
     @property
     def geojson(self):
@@ -209,13 +253,15 @@ class Station(db.Model):
             dfs.append(df)
 
         updates_df = pd.concat(dfs)
-        updates_df.set_index('m', inplace=True)
-        updates_df.groupby(updates_df.index, sort=False).first()
 
         updates_df.rename(columns={
+            'm': 'moment',
             'b': 'bikes',
             's': 'spaces'
         }, inplace=True)
+
+        updates_df.set_index('moment', inplace=True)
+        updates_df.groupby(updates_df.index, sort=False).first()
 
         return updates_df
 
