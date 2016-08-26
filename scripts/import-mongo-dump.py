@@ -19,7 +19,7 @@ import subprocess
 from pymongo import MongoClient
 from tqdm import tqdm
 
-from scripts import util
+import util
 
 
 START_TIME = time.time()
@@ -27,7 +27,8 @@ START_TIME = time.time()
 
 def create_remote_connexion(port=2000):
     # Create a SSH tunnel in the background
-    tunnel_command = 'ssh -f -N -L {}:localhost:27017 46.101.234.224 -l max'.format(port)
+    tunnel_command = 'ssh -f -N -L {}:localhost:27017 46.101.234.224 -l max'.format(
+        port)
     try:
         subprocess.call(tunnel_command, shell=True)
     except Exception:
@@ -43,11 +44,13 @@ def fetch(city_name, local, remote):
         max_date = local.find_one(sort=[('_id', -1)])['_id']
         # Delete the latest document to avoid incomplete data
         local.delete_one({'_id': max_date})
-        util.notify('Will only import data for {0} after {1} (included)'.format(city_name, max_date), 'yellow', START_TIME)
+        util.notify('Will only import data for {0} after {1} (included)'.format(
+            city_name, max_date), 'yellow', START_TIME)
         # Query the relevant data on the remove server
         cursor = remote.find({'_id': {'$gte': max_date}}, sort=[('_id', 1)])
     else:
-        util.notify('Importing all data for {} (this could take a while)'.format(city_name), 'yellow', START_TIME)
+        util.notify('Importing all data for {} (this could take a while)'.format(
+            city_name), 'yellow', START_TIME)
         # Query the relevant data on the remove server
         cursor = remote.find(sort=[('_id', 1)])
 
@@ -65,7 +68,8 @@ if __name__ == '__main__':
     PARAMS = PARSER.parse_args()
     CITY_NAME = PARAMS.city
 
-    util.notify('Attempting to retrieve data for {}'.format(CITY_NAME), 'green', START_TIME)
+    util.notify('Attempting to retrieve data for {}'.format(
+        CITY_NAME), 'green', START_TIME)
 
     # Define the remote and the local connections
     REMOTE_CONN = create_remote_connexion()
@@ -83,11 +87,13 @@ if __name__ == '__main__':
         }
     }
 
-    util.notify('Established connection to the remote database', 'green', START_TIME)
+    util.notify('Established connection to the remote database',
+                'green', START_TIME)
 
     util.notify('Begun retrieving bike station updates', 'green', START_TIME)
     fetch(CITY_NAME, C['local']['ts'], C['remote']['ts'])
-    util.notify('Finished retrieving bike station updates', 'green', START_TIME)
+    util.notify('Finished retrieving bike station updates',
+                'green', START_TIME)
 
     util.notify('Begun retrieving weather updates', 'green', START_TIME)
     fetch(CITY_NAME, C['local']['weather'], C['remote']['weather'])
