@@ -5,6 +5,7 @@ import time
 
 from flask import Flask, request, session
 from flask_sqlalchemy import SQLAlchemy
+from pymongo import MongoClient
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
@@ -17,14 +18,16 @@ app.config.from_object('app.config')
 # Create an SQLAlchemy binding
 db = SQLAlchemy(app)
 
+# Set the MongoDB client
+mongo_client = MongoClient(app.config['MONGO_HOST'], app.config['MONGO_PORT'])
+mongo_bikes_coll = mongo_client[app.config['MONGO_BIKES_COLLECTION_NAME']]
+mongo_weather_coll = mongo_client[app.config['MONGO_WEATHER_COLLECTION_NAME']]
+
 # Add the top level to the import path
 sys.path.append('..')
 
 # Import the views
-from app.views import (
-    api,
-    main
-)
+from app.views import api, main
 app.register_blueprint(api.API_BP)
 
 # Setup the logger

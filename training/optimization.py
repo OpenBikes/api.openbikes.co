@@ -3,7 +3,6 @@ import datetime as dt
 import numpy as np
 
 from app import logger
-from mongo.timeseries import query
 from training import munging
 
 
@@ -21,12 +20,7 @@ def bandit(regressor, training):
     since = then - dt.timedelta(days=max(backwards_days))
     # Get all the necessary data
     try:
-        data = query.station(
-            training.station.city.name,
-            training.station.name,
-            since=since,
-            until=now
-        )
+        data = training.station.get_updates(since, now)
     except:
         logger.info(
             'No data available',

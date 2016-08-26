@@ -21,6 +21,8 @@ SQLALCHEMY_TRACK_MODIFICATIONS = os.environ.get('SQLALCHEMY_TRACK_MODIFICATIONS'
 
 MONGO_HOST = os.environ.get('MONGO_HOST', 'mongo')
 MONGO_PORT = int(os.environ.get('MONGO_PORT', 27017))
+MONGO_BIKES_COLLECTION_NAME = 'OpenBikes'
+MONGO_WEATHER_COLLECTION_NAME = 'OpenBikes_Weather'
 
 REGRESSORS_FOLDER = os.environ.get('REGRESSORS_FOLDER', 'training/regressors/')
 

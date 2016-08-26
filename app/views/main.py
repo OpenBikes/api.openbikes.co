@@ -1,4 +1,4 @@
-from flask import redirect, request, send_from_directory
+from flask import redirect, send_from_directory
 
 from app import app
 

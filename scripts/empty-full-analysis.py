@@ -32,7 +32,7 @@ empty = pd.DataFrame(index=DAYS, columns=(station.name for station in stations))
 full = pd.DataFrame(index=DAYS, columns=(station.name for station in stations))
 
 for station in stations:
-    df = query.station(city.name, station.name, SINCE, UNTIL)
+    df = station.get_updates(SINCE, UNTIL)
     df['moment'] = df.index
     df['day'] = df['moment'].apply(lambda x: x.date().isoformat())
     # Extract the time between each observation

@@ -14,15 +14,25 @@ Example usage: `python import-mongo-dump.py Toulouse`
 
 import argparse
 import time
+import subprocess
 
 from pymongo import MongoClient
 from tqdm import tqdm
 
-from mongo.utils import create_remote_connexion
 from scripts import util
 
 
 START_TIME = time.time()
+
+
+def create_remote_connexion(port=2000):
+    # Create a SSH tunnel in the background
+    tunnel_command = 'ssh -f -N -L {}:localhost:27017 46.101.234.224 -l max'.format(port)
+    try:
+        subprocess.call(tunnel_command, shell=True)
+    except Exception:
+        print('Port {} is already in use'.format(port))
+    return MongoClient(port=port)
 
 
 def fetch(city_name, local, remote):
@@ -42,7 +52,7 @@ def fetch(city_name, local, remote):
         cursor = remote.find(sort=[('_id', 1)])
 
     total = cursor.count()
-    util.notify('Fetched {0} document(s)'.format(total), 'cyan', START_TIME)
+    util.notify('Found {0} document(s)'.format(total), 'cyan', START_TIME)
     # Insert it locally
     for i, cur in tqdm(enumerate(cursor)):
         local.insert(cur)

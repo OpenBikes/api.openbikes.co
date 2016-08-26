@@ -1,12 +1,15 @@
+import datetime as dt
 import json
 
 from geoalchemy2 import Geometry
 import pandas as pd
+from pandas.io.json import json_normalize
 from sqlalchemy import (CheckConstraint, Column, Integer, String, Boolean, DateTime, Float,
                         ForeignKey, Text)
 from sqlalchemy.orm import relationship
 
 from app import db
+from app import mongo_bikes_coll, mongo_weather_coll
 from app import util
 from training.util import check_regressor_exists, load_regressor
 from training import munging
@@ -31,6 +34,114 @@ class City(db.Model):
     update = Column(DateTime, nullable=False, index=True)
 
     stations = relationship('Station', back_populates='city', passive_deletes=True)
+
+    def insert_station_updates(self, stations):
+
+        collection = mongo_bikes_coll[self.name]
+
+        for station in stations:
+            name = station['name']
+            timestamp = dt.datetime.strptime(station['update'], '%Y-%m-%dT%H:%M:%S')
+            time = timestamp.time().isoformat()
+            date = timestamp.date().isoformat()
+            # Check the dates has already been inserted
+            if collection.find({'_id': date}).count() == 0:
+                collection.save({
+                    '_id': date,
+                    'u': []
+                })
+            # Add the station entry if it doesn't exist and there is data
+            if collection.find({'_id': date, 'u.n': name}).count() == 0:
+                collection.update({'_id': date, 'u.n': {'$nin': [name]}}, {
+                    '$push': {
+                        'u': {
+                            'n': name,
+                            'i': []
+                        }
+                    }
+                })
+            # Update the station with the new information
+            if collection.find({'_id': date, 'u.n': name, 'u.i.m': time}).count() == 0:
+                collection.update({'_id': date, 'u.n': name}, {
+                    '$push': {
+                        'u.$.i': {
+                            'm': time,
+                            'b': station['bikes'],
+                            's': station['stands']
+                        }
+                    }
+                })
+
+    def insert_weather_update(self, weather_update):
+
+        collection = mongo_weather_coll[self.name]
+
+        # Extract the date
+        date = weather_update['datetime'].date().isoformat()
+        time = weather_update['datetime'].time().isoformat()
+        # Check the dates has already been inserted
+        if collection.find({'_id': date}).count() == 0:
+            collection.save({
+                '_id': date,
+                'u': []
+            })
+        # Add the weather entry if it doesn't exist
+        if collection.find({'_id': date, 'u.m': time}).count() == 0:
+            # Update the day with the new information
+            collection.update({'_id': date}, {
+                '$push': {
+                    'u': {
+                        'm': time,
+                        'd': weather_update['description'],
+                        'p': weather_update['pressure'],
+                        't': weather_update['temperature'],
+                        'h': weather_update['humidity'],
+                        'w': weather_update['wind_speed'],
+                        'c': weather_update['clouds']
+                    }
+                }
+            })
+
+    def get_updates(self, since, until):
+
+        collection = mongo_bikes_coll[self.name]
+
+        cursor = collection.find({
+            '_id': {
+                '$gte': since.isoformat(),
+                '$lte': until.isoformat()
+            }
+        })
+
+        dfs = []
+
+        for c in cursor:
+
+            date = dt.datetime.strptime(c['_id'], '%Y-%m-%d')
+
+            df = pd.concat((
+                json_normalize(update, 'i', ['n'])
+                for update in c['u']
+            ))
+
+            df['m'] = df['m'].apply(lambda x: dt.datetime.combine(
+                date,
+                dt.datetime.strptime(x, '%H:%M:%S').time())
+            )
+
+            dfs.append(df)
+
+        updates_df = pd.concat(dfs)
+        updates_df.set_index('m', inplace=True)
+        updates_df.groupby(updates_df.index, sort=False).first()
+
+        updates_df.rename(columns={
+            'b': 'bikes',
+            's': 'spaces',
+            'n': 'station'
+        }, inplace=True)
+
+        return updates_df
 
     @property
     def geojson(self):
@@ -65,6 +176,48 @@ class Station(db.Model):
     training = relationship('Training', uselist=False)
 
     forecasts = relationship('Forecast', back_populates='station', lazy='dynamic', passive_deletes=True)
+
+    def get_updates(self, since, until):
+
+        collection = mongo_bikes_coll[self.city.name]
+
+        cursor = collection.find({
+            '_id': {
+                '$gte': since.isoformat(),
+                '$lte': until.isoformat()
+            },
+            'u.n': self.name
+        }, {
+            'u': {
+                '$elemMatch': {
+                    'n': self.name
+                }
+            }
+        })
+
+        dfs = []
+
+        for c in cursor:
+
+            date = dt.datetime.strptime(c['_id'], '%Y-%m-%d')
+
+            df = json_normalize(c['u'][0], 'i')
+            df['m'] = df['m'].apply(lambda x: dt.datetime.combine(
+                date,
+                dt.datetime.strptime(x, '%H:%M:%S').time())
+            )
+            dfs.append(df)
+
+        updates_df = pd.concat(dfs)
+        updates_df.set_index('m', inplace=True)
+        updates_df.groupby(updates_df.index, sort=False).first()
+
+        updates_df.rename(columns={
+            'b': 'bikes',
+            's': 'spaces'
+        }, inplace=True)
+
+        return updates_df
 
     def __repr__(self):
         return '<Station #{}>'.format(self.id)

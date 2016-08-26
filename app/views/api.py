@@ -1,5 +1,3 @@
-import datetime as dt
-
 from flask import abort, Blueprint, jsonify, request
 import voluptuous as vol
 
