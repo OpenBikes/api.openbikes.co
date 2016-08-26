@@ -34,10 +34,7 @@ def api_geojson(city_slug):
 def api_countries():
     ''' Return the list of countries. '''
     countries = list(srv.get_countries(provider=request.args.get('provider')))
-    return jsonify({
-        'countries': countries,
-        'count': len(countries)
-    })
+    return jsonify(countries)
 
 
 @API_BP.route('/providers', methods=['GET'])
@@ -45,10 +42,7 @@ def api_countries():
 def api_providers():
     ''' Return the list of providers. '''
     providers = list(srv.get_providers(country=request.args.get('country')))
-    return jsonify({
-        'providers': providers,
-        'count': len(providers)
-    })
+    return jsonify(providers)
 
 
 @API_BP.route('/cities', methods=['GET'])
@@ -62,10 +56,7 @@ def api_cities():
         predictable=request.args.get('predictable'),
         active=request.args.get('active')
     ))
-    return jsonify({
-        'cities': cities,
-        'count': len(cities)
-    })
+    return jsonify(cities)
 
 
 @API_BP.route('/stations', methods=['GET'])
@@ -76,10 +67,7 @@ def api_stations():
         city_slug=request.args.get('city_slug'),
         slug=request.args.get('station_slug')
     ))
-    return jsonify({
-        'stations': stations,
-        'count': len(stations)
-    })
+    return jsonify(stations)
 
 
 @API_BP.route('/updates', methods=['GET'])
@@ -90,10 +78,7 @@ def api_updates():
         updates = list(srv.get_updates(request.args.get('city_slug')))
         for i, update in enumerate(updates):
             updates[i]['update'] = update['update'].isoformat()
-        return jsonify({
-            'updates': updates,
-            'count': len(updates)
-        })
+        return jsonify(updates)
     except CityNotFound:
         abort(412)
 
