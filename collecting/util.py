@@ -17,10 +17,10 @@ def json_to_geojson(json_object):
                     'type': 'Point',
                     'coordinates': [entry['longitude'], entry['latitude']]
                 },
-                'properties': {
-                    **entry,
+                'properties': dict(
+                    entry,
                     **{'slug': slugify(entry['name'])}
-                },
+                ),
             } for entry in json_object
         ]
     }
