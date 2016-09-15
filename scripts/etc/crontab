@@ -1,10 +1,10 @@
 # START CRON JOB LIST
 ## Collect biking data every 2 minutes
-*/2 * * * * cd /usr/src/app && python3 collect-bikes.py
+*/2 * * * * cd /usr/src/app && python3 manage.py collectbikes
 
 ## Collect weather data every 15 minutes
-*/15 * * * * cd /usr/src/app && python3 collect-weather.py
+*/15 * * * * cd /usr/src/app && python3 manage.py collectweather
 
 ## Train regressors every Sunday at 3:30 AM
-30 3 * * 6 cd /usr/src/app && python3 train-regressors.py
+30 3 * * 6 cd /usr/src/app && python3 manage.py train
 # END CRON JOB LIST
