@@ -10,7 +10,7 @@ The datasets are made up with all the data on the local machine.
 
 This script has to be run from the root of this repository (next to `run.py`).
 
-Example usage: `python create-dataset.py Toulouse`
+Example usage: `python create-dataset.py Toulouse 2016-04-01 2016-09-30`
 '''
 
 import argparse
@@ -28,6 +28,8 @@ from scripts import util
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument('city', type=str, help='City for which to import data')
+    PARSER.add_argument('since', type=str, help='Get the data from this date')
+    PARSER.add_argument('until', type=str, help='Get the data until this date')
     PARAMS = PARSER.parse_args()
 
     # Make sure the city exists
@@ -41,6 +43,10 @@ if __name__ == '__main__':
     if not CITY.predictable:
         util.notify(CityUnpredicable, 'red')
         sys.exit()
+
+    # Parse the dates
+    SINCE = dt.datetime.strptime(PARAMS.since, '%Y-%m-%d')
+    UNTIL = dt.datetime.strptime(PARAMS.until, '%Y-%m-%d')
 
     # Create the necessary folders if they don't exist
     if not os.path.exists(CITY.slug):
@@ -58,7 +64,7 @@ if __name__ == '__main__':
 
     # Save the weather data
     util.notify('Preparing weather file...', 'cyan')
-    WEATHER = CITY.get_weather_updates(dt.datetime(1900, month=1, day=1), dt.datetime.now())
+    WEATHER = CITY.get_weather_updates(SINCE, UNTIL)
     WEATHER.to_csv(os.path.join(CITY.slug, 'weather.csv'))
     util.notify('Done!', 'green')
 
@@ -66,6 +72,9 @@ if __name__ == '__main__':
     util.notify('Preparing individual station files...', 'cyan')
     STATIONS = srv.get_stations(city_slug=CITY.slug, serialized=False)
     for station in STATIONS:
-        df = station.get_updates(dt.datetime(year=1900, month=1, day=1), dt.datetime.now())
-        df.to_csv(os.path.join(CITY.slug, 'stations/', '{}.csv'.format(station.slug)))
+        try:
+            df = station.get_updates(SINCE, UNTIL)
+            df.to_csv(os.path.join(CITY.slug, 'stations/', '{}.csv'.format(station.slug)))
+        except:
+            pass
     util.notify('Done!', 'green')
