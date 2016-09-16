@@ -1,10 +1,11 @@
+MAILTO=maxhalford25@gmail.com
 # START CRON JOB LIST
 ## Collect biking data every 2 minutes
-*/2 * * * * cd /var/www/api.openbikes.co && source openbikes/bin/activate && python manage.py collectbikes && curl https://hchk.io/14638a25-5d98-4d10-a06f-46c0b758154d
+*/2 * * * * cd /var/www/api.openbikes.co && openbikes/bin/python manage.py collectbikes && curl https://hchk.io/14638a25-5d98-4d10-a06f-46c0b758154d
 
 ## Collect weather data every 15 minutes
-*/15 * * * * cd /var/www/api.openbikes.co && source openbikes/bin/activate && python manage.py collectweather && curl https://hchk.io/3d610dc4-0a2b-4f33-9560-21f8f9c3977f
+*/15 * * * * cd /var/www/api.openbikes.co && openbikes/bin/python manage.py collectweather && curl https://hchk.io/3d610dc4-0a2b-4f33-9560-21f8f9c3977f
 
 ## Train regressors every Sunday at 3:30 AM
-30 3 * * 6 cd /var/www/api.openbikes.co && source openbikes/bin/activate && python manage.py train && curl https://hchk.io/680396ab-06eb-4706-a45c-6e51fb417305
+30 3 * * 6 cd /var/www/api.openbikes.co && openbikes/bin/python manage.py train && curl https://hchk.io/680396ab-06eb-4706-a45c-6e51fb417305
 # END CRON JOB LIST
