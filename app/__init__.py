@@ -3,6 +3,8 @@ import os
 import sys
 import time
 
+from app.util import FloatConverter
+
 from flask import Flask, request, session
 from flask_sqlalchemy import SQLAlchemy
 from pymongo import MongoClient
@@ -14,6 +16,9 @@ app = Flask(__name__, static_folder='static', static_url_path='')
 # Configure the application
 app.config.from_object('app.config_common')
 app.config.from_object('app.config')
+
+# The built-in FloatConverter does not handle negative numbers.
+app.url_map.converters['float'] = FloatConverter
 
 # Create an SQLAlchemy binding
 db = SQLAlchemy(app)

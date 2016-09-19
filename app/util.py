@@ -4,6 +4,28 @@ from string import punctuation
 import time
 from unidecode import unidecode
 
+from werkzeug.routing import NumberConverter
+
+
+class FloatConverter(NumberConverter):
+
+    """ This converter supports negative values.
+    The built-in FloatConverter does not handle negative numbers. So we need to
+    write a custom converter to handle negatives. This converter also treats
+    integers as floats, which also would have failed.
+
+    Args: see werkeuz.routing docstring (http://werkzeug.pocoo.org/docs/0.11/routing/#werkzeug.routing.FloatConverter)
+        map: the :class: `Map`
+        min: the minimal value
+        max: the maximal value
+    """
+
+    regex = r'-?\d+(\.\d+)?'
+    num_convert = float
+
+    def __init__(self, map, min=None, max=None):
+        NumberConverter.__init__(self, map, 0, min, max)
+
 
 def compute_haversine_distance(lat1, lon1, lat2, lon2):
     # Convert decimal degrees to radians

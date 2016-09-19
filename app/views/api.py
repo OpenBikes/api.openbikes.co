@@ -1,6 +1,7 @@
 from flask import abort, Blueprint, jsonify, request
 import voluptuous as vol
 
+from app import app
 from app import services as srv
 from app import voluptuous_util as vol_util
 from app.exceptions import (
@@ -139,7 +140,8 @@ def api_closest_city(latitude, longitude):
 @util.crossdomain(origin='*')
 def api_closest_station(latitude, longitude):
     ''' Return the closest station for a given latitude and longitude. '''
-    response = srv.find_closest_station(latitude, longitude, request.args.get('city_slug'))
+    response = srv.find_closest_station(
+        latitude, longitude, request.args.get('city_slug'))
     return jsonify(response)
 
 
