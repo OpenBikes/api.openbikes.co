@@ -4,7 +4,7 @@ Students will have to fill the blanks with their predictive results.
 
 This script has to be run from the root of this repository (next to `run.py`).
 
-Example usage: `python create-dataset-challenge.py --city Toulouse --station '00229 - IUT RANGUEIL' --moment 2016/09/02-00:14:01`
+Example usage: `python scripts/create-dataset-challenge.py --city Toulouse --station '00229 - IUT RANGUEIL' --moment 2016/09/02-00:14:01`
 
 Options:
   --city TEXT      City for which to import data
@@ -21,6 +21,10 @@ import click
 import datetime as dt
 import numpy as np
 import pandas as pd
+
+# Update sys.path to access app folder
+sys.path.insert(0, os.getcwd())
+os.chdir(os.getcwd())
 
 from app import services as srv
 from app.exceptions import CityNotFound, CityUnpredicable
