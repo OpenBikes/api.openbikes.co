@@ -10,7 +10,7 @@ The datasets are made up with all the data on the local machine.
 
 This script has to be run from the root of this repository (next to `run.py`).
 
-Example usage: `python create-dataset.py Toulouse 2016-04-01 2016-09-30`
+Example usage: `python create-dataset.py Toulouse 2016/04/01-00:00:01 2016/10/05-10:00:00`
 '''
 
 import argparse
@@ -45,8 +45,8 @@ if __name__ == '__main__':
         sys.exit()
 
     # Parse the dates
-    SINCE = dt.datetime.strptime(PARAMS.since, '%Y-%m-%d')
-    UNTIL = dt.datetime.strptime(PARAMS.until, '%Y-%m-%d')
+    SINCE = dt.datetime.strptime(PARAMS.since, '%Y/%m/%d-%H:%M:%S')
+    UNTIL = dt.datetime.strptime(PARAMS.until, '%Y/%m/%d-%H:%M:%S')
 
     # Create the necessary folders if they don't exist
     if not os.path.exists(CITY.slug):

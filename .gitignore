@@ -10,3 +10,4 @@
 *.zip
 config.py
 ngrok
+venv/

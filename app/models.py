@@ -227,8 +227,8 @@ class Station(db.Model):
 
         cursor = collection.find({
             '_id': {
-                '$gte': since.isoformat(),
-                '$lte': until.isoformat()
+                '$gte': since.date().isoformat(),
+                '$lte': until.date().isoformat()
             },
             'u.n': self.name
         }, {
@@ -250,6 +250,10 @@ class Station(db.Model):
                 date,
                 dt.datetime.strptime(x, '%H:%M:%S').time())
             )
+
+            # Refilter with pandas to take into account the time which is not indexed through Mongo
+            df = df[(df['m'] >= since) & (df['m'] <= until)]
+
             dfs.append(df)
 
         updates_df = pd.concat(dfs)
