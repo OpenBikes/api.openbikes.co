@@ -10,9 +10,9 @@ class CityUnpredicable(Exception):
     pass
 
 
-class StationNotFound(Exception):
+class InvalidKind(Exception):
     pass
 
 
-class InvalidKind(Exception):
+class StationNotFound(Exception):
     pass

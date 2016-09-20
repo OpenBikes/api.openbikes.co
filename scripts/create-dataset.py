@@ -74,7 +74,8 @@ if __name__ == '__main__':
     for station in STATIONS:
         try:
             df = station.get_updates(SINCE, UNTIL)
-            df.to_csv(os.path.join(CITY.slug, 'stations/', '{}.csv'.format(station.slug)))
+            df.to_csv(os.path.join(CITY.slug, 'stations/',
+                                   '{}.csv'.format(station.slug)))
         except:
             pass
     util.notify('Done!', 'green')
