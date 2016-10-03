@@ -56,7 +56,8 @@ def find_tuple_according_moment(df, datetime_obj):
     return df.iloc[np.argmin(np.abs(df.index.to_pydatetime() - datetime_obj))]
 
 
-def init_dataframe(city, station, moment, blank):
+def init_station_dataframe(city, station, moment, blank):
+
     click.secho('city: {}'.format(city), fg='yellow', bold=True)
     click.secho('station: {}'.format(station), fg='yellow', bold=True)
     click.secho('moment: {}'.format(moment), fg='yellow')
@@ -66,7 +67,7 @@ def init_dataframe(city, station, moment, blank):
     FILTERED_DATES = [SINCE + dt.timedelta(**moment) for moment in MOMENTS]
     UNTIL = FILTERED_DATES[-1]
 
-    util.notify('Querying city in database...', 'cyan')
+    util.notify('Querying {city} in database...'.format(city=city), 'cyan')
     # Make sure the city exists
     try:
         CITY = next(srv.get_cities(name=city, serialized=False))
@@ -79,7 +80,7 @@ def init_dataframe(city, station, moment, blank):
         util.notify(CityUnpredicable, 'red')
         sys.exit()
 
-    util.notify('Querying city stations in database...', 'cyan')
+    util.notify('Querying {city} stations in database...'.format(city=city), 'cyan')
 
     # Search city station
     STATION = next(srv.get_stations(name=station, city_slug=CITY.slug, serialized=False))
@@ -96,15 +97,16 @@ def init_dataframe(city, station, moment, blank):
     util.notify('Generating dataframe...', 'cyan')
     # Create dataframe
     columns = dict(
-        city=[city] * len(FILTERED_DATES),
-        station=[station] * len(FILTERED_DATES),
         bikes=[find_tuple_according_moment(df, moment).bikes for moment in FILTERED_DATES] if not blank else
-        [''] * len(FILTERED_DATES)
+        [''] * len(FILTERED_DATES),
+        station=[station] * len(FILTERED_DATES),
+        city=[city] * len(FILTERED_DATES)
     )
 
     index = FILTERED_DATES
 
-    return pd.DataFrame(columns, index)
+    column_order = ['city', 'station', 'bikes']
+    return pd.DataFrame(columns, index)[column_order]
 
 
 @click.command()
@@ -113,11 +115,12 @@ def init_dataframe(city, station, moment, blank):
 @click.option('--blank', type=bool, help='Export real data for admins or leave blanks for students (default: True)', default=True)
 def create_dataset_challenge(place, moment, blank):
 
-    dataframes = (init_dataframe(city=obj[0], station=obj[1], moment=moment, blank=blank) for obj in place)
+    dataframes = (init_station_dataframe(city=obj[0], station=obj[1], moment=moment, blank=blank) for obj in place)
     dataset = pd.concat(dataframes, axis=0, ignore_index=False)
+    print(dataset)
 
     try:
-        util.notify('Saving dataframe...', 'cyan')
+        util.notify('Saving global dataframe...', 'cyan')
         dataset.to_csv('dataset.csv')
     except Exception as exc:
         print(exc)
