@@ -4,14 +4,16 @@ Students will have to fill the blanks with their predictive results.
 
 This script has to be run from the root of this repository (next to `run.py`).
 
-Example usage: `python scripts/create-dataset-challenge.py --city Toulouse --station '00229 - IUT RANGUEIL' --moment 2016/09/02-00:14:01`
+Example usage: `python scripts/create-dataset-challenge.py --place 'Toulouse' '00229 - IUT RANGUEIL' --place 'Toulouse' '00189 - MURET BOUTINON'  --moment 2016/09/02-00:14:01 --blank False`
+
+Usage: create-dataset-challenge.py [OPTIONS]
 
 Options:
-  --city TEXT      City for which to import data
-  --station TEXT   Bike station for which to import data
-  --moment DATE    Get the data since this moment
-  --blank BOOLEAN  Export real data for admins or leave blanks for students
-                   (default: True)
+  --place <TEXT TEXT>...  City and station for which to import data
+  --moment DATE           Get the data since this moment
+  --blank BOOLEAN         Export real data for admins or leave blanks for
+                          students (default: True)
+  --help                  Show this message and exit.
 '''
 
 import os
@@ -54,12 +56,7 @@ def find_tuple_according_moment(df, datetime_obj):
     return df.iloc[np.argmin(np.abs(df.index.to_pydatetime() - datetime_obj))]
 
 
-@click.command()
-@click.option('--city', type=str, help='City for which to import data')
-@click.option('--station', type=str, help='Bike station for which to import data')
-@click.option('--moment', type=DATE_TYPE, help='Get the data since this moment')
-@click.option('--blank', type=bool, help='Export real data for admins or leave blanks for students (default: True)', default=True)
-def create_dataset_challenge(city, station, moment, blank):
+def init_dataframe(city, station, moment, blank):
     click.secho('city: {}'.format(city), fg='yellow', bold=True)
     click.secho('station: {}'.format(station), fg='yellow', bold=True)
     click.secho('moment: {}'.format(moment), fg='yellow')
@@ -83,6 +80,7 @@ def create_dataset_challenge(city, station, moment, blank):
         sys.exit()
 
     util.notify('Querying city stations in database...', 'cyan')
+
     # Search city station
     STATION = next(srv.get_stations(name=station, city_slug=CITY.slug, serialized=False))
 
@@ -101,17 +99,28 @@ def create_dataset_challenge(city, station, moment, blank):
         city=[city] * len(FILTERED_DATES),
         station=[station] * len(FILTERED_DATES),
         bikes=[find_tuple_according_moment(df, moment).bikes for moment in FILTERED_DATES] if not blank else
-        ['_'] * len(FILTERED_DATES)
+        [''] * len(FILTERED_DATES)
     )
 
     index = FILTERED_DATES
 
-    dataset = pd.DataFrame(columns, index)
+    return pd.DataFrame(columns, index)
+
+
+@click.command()
+@click.option('--place', type=(str, str), help='City and station for which to import data', multiple=True)
+@click.option('--moment', type=DATE_TYPE, help='Get the data since this moment')
+@click.option('--blank', type=bool, help='Export real data for admins or leave blanks for students (default: True)', default=True)
+def create_dataset_challenge(place, moment, blank):
+
+    dataframes = (init_dataframe(city=obj[0], station=obj[1], moment=moment, blank=blank) for obj in place)
+    dataset = pd.concat(dataframes, axis=0, ignore_index=False)
 
     try:
         util.notify('Saving dataframe...', 'cyan')
-        dataset.to_csv(os.path.join('{}_{}.csv'.format(CITY.slug, STATION.slug)))
+        dataset.to_csv('dataset.csv')
     except Exception as exc:
+        print(exc)
         util.notify(exc, 'red')
         sys.exit()
 
