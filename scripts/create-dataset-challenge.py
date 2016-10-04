@@ -16,11 +16,11 @@ Options:
   --help                  Show this message and exit.
 '''
 
+import datetime as dt
 import os
 import sys
 
 import click
-import datetime as dt
 import numpy as np
 import pandas as pd
 

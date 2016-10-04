@@ -13,6 +13,7 @@ from sqlalchemy.engine import Engine
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 
+
 # Configure the application
 app.config.from_object('app.config_common')
 app.config.from_object('app.config')
@@ -39,9 +40,8 @@ app.register_blueprint(api.API_BP)
 from app.logger_setup import logger
 
 # Create the necessary folders if they don't exist
-if not os.path.exists(app.config['REGRESSORS_FOLDER']):
+if not os.path.exists(app.config['REGRESSORS_FOLDER']) and os.getcwd().split('/')[-1] not in ('analysis', 'scripts'):
     os.makedirs(app.config['REGRESSORS_FOLDER'])
-
 
 # Configure session shutdown
 @app.teardown_appcontext

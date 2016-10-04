@@ -2,18 +2,19 @@
 This script creates two contingency tables to analyze the average duration
 each station in a city has been empty or full.
 
-This script has to be run from the root of this repository (next to `run.py`).
-
-Example usage: `python scripts/empty-full-analysis.py Toulouse`
+Example usage: `python empty-full.py Toulouse`
 '''
 
 import argparse
 import datetime as dt
+import sys
+
+# Update sys.path to access app folder
+sys.path.append('..')
 
 import pandas as pd
 
 from app import services as srv
-from mongo.timeseries import query
 
 
 PARSER = argparse.ArgumentParser()
