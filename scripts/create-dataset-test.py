@@ -4,15 +4,14 @@ Students will have to fill the blanks with their predictive results.
 
 This script has to be run from the root of this repository (next to `run.py`).
 
-Example usage: `python scripts/create-dataset-challenge.py --place 'Toulouse' '00229 - IUT RANGUEIL' --place 'Toulouse' '00189 - MURET BOUTINON'  --moment 2016/09/02-00:14:01 --blank False`
+Example usage: `python scripts/create-dataset-test.py --place 'toulouse' '00229-iut-rangueil' --place 'toulouse' '00189-muret-boutinon' --moment 2016/08/10-00:14:01 --blank False`
 
 Usage: create-dataset-challenge.py [OPTIONS]
 
 Options:
   --place <TEXT TEXT>...  City and station for which to import data
   --moment DATE           Get the data since this moment
-  --blank BOOLEAN         Export real data for admins or leave blanks for
-                          students (default: True)
+  --blank BOOLEAN         Export real data for admins or leave blanks for students (default: True)
   --help                  Show this message and exit.
 '''
 
@@ -70,7 +69,7 @@ def init_station_dataframe(city, station, moment, blank):
     util.notify('Querying {city} in database...'.format(city=city), 'cyan')
     # Make sure the city exists
     try:
-        CITY = next(srv.get_cities(name=city, serialized=False))
+        CITY = next(srv.get_cities(slug=city, serialized=False))
     except CityNotFound as exc:
         util.notify(exc, 'red')
         sys.exit()
@@ -83,7 +82,7 @@ def init_station_dataframe(city, station, moment, blank):
     util.notify('Querying {city} stations in database...'.format(city=city), 'cyan')
 
     # Search city station
-    STATION = next(srv.get_stations(name=station, city_slug=CITY.slug, serialized=False))
+    STATION = next(srv.get_stations(slug=station, city_slug=CITY.slug, serialized=False))
 
     # Get bike updates
     if not blank:
@@ -115,19 +114,23 @@ def init_station_dataframe(city, station, moment, blank):
 @click.option('--blank', type=bool, help='Export real data for admins or leave blanks for students (default: True)', default=True)
 def create_dataset_challenge(place, moment, blank):
 
-    dataframes = (init_station_dataframe(city=obj[0], station=obj[1], moment=moment, blank=blank) for obj in place)
+    dataframes = (
+        init_station_dataframe(city=obj[0], station=obj[1], moment=moment, blank=blank)
+        for obj in place
+    )
     dataset = pd.concat(dataframes, axis=0, ignore_index=False)
     print(dataset)
 
     try:
         util.notify('Saving global dataframe...', 'cyan')
-        dataset.to_csv('dataset.csv')
+        dataset.to_csv('test-blank.csv' if blank else 'test-filled.csv')
     except Exception as exc:
         print(exc)
         util.notify(exc, 'red')
         sys.exit()
 
     util.notify('Done!', 'green')
+
 
 if __name__ == '__main__':
     create_dataset_challenge()

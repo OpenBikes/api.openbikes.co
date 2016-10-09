@@ -10,7 +10,7 @@ The datasets are made up with all the data on the local machine.
 
 This script has to be run from the root of this repository (next to `run.py`).
 
-Example usage: `python create-dataset.py Toulouse 2016/04/01-00:00:01 2016/10/05-10:00:00`
+Example usage: `python create-dataset-train.py Toulouse 2016/04/01-00:00:01 2016/10/05-10:00:00`
 '''
 
 import argparse
