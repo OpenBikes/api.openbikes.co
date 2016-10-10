@@ -24,8 +24,7 @@ import numpy as np
 import pandas as pd
 
 # Update sys.path to access app folder
-sys.path.insert(0, os.getcwd())
-os.chdir(os.getcwd())
+sys.path.append('..')
 
 from app import services as srv
 from app.exceptions import CityNotFound, CityUnpredicable
