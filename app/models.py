@@ -108,8 +108,8 @@ class City(db.Model):
 
         cursor = collection.find({
             '_id': {
-                '$gte': since.isoformat(),
-                '$lte': until.isoformat()
+                '$gte': since.date().isoformat(),
+                '$lte': until.date().isoformat()
             }
         })
 
@@ -151,8 +151,8 @@ class City(db.Model):
 
         cursor = collection.find({
             '_id': {
-                '$gte': since.isoformat(),
-                '$lte': until.isoformat()
+                '$gte': since.date().isoformat(),
+                '$lte': until.date().isoformat()
             }
         })
 
