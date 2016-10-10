@@ -7,8 +7,6 @@ The script will use the latest date in the local database to know how much data 
 previous entries exist then all the data will be imported. Running the script will basically sync
 the local database with the remote database.
 
-This script has to be run from the root of this repository (next to `run.py`).
-
 Example usage: `python import-mongo-dump.py Toulouse`
 '''
 
