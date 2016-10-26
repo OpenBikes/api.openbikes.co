@@ -16,7 +16,6 @@ Options:
 '''
 
 import datetime as dt
-import os
 import sys
 
 import click

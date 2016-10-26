@@ -245,11 +245,14 @@ class Station(db.Model):
 
             date = dt.datetime.strptime(c['_id'], '%Y-%m-%d')
 
-            df = json_normalize(c['u'][0], 'i')
-            df['m'] = df['m'].apply(lambda x: dt.datetime.combine(
-                date,
-                dt.datetime.strptime(x, '%H:%M:%S').time())
-            )
+            try:
+                df = json_normalize(c['u'][0], 'i')
+                df['m'] = df['m'].apply(lambda x: dt.datetime.combine(
+                    date,
+                    dt.datetime.strptime(x, '%H:%M:%S').time())
+                )
+            except KeyError: # No updates are available at a certain date yet the date exists
+                continue
 
             # Refilter with pandas to take into account the time which is not indexed through Mongo
             df = df[(df['m'] >= since) & (df['m'] <= until)]
