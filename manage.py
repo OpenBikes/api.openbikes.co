@@ -156,24 +156,15 @@ def updatecity(city):
     city.position = 'POINT({latitude} {longitude})'.format(latitude=mean_lat, longitude=mean_lon)
     session.commit()
 
-    # Delete the stations that don't exist anymore
-    new_station_names = [station['name'] for station in stations]
-    existing_stations = models.Station.query.filter_by(city_id=city.id)
-    stations_to_delete = [
-        station
-        for station in existing_stations
-        if station.name not in new_station_names
-    ]
-    for station in stations_to_delete:
-        session.delete(station)
-    session.commit()
-
     # Add the new stations
-    old_station_names = [station.name for station in existing_stations]
+    existing_station_names = [
+        station.name
+        for station in models.Station.query.filter_by(city_id=city.id)
+    ]
     new_stations = [
         station
         for station in stations
-        if station['name'] not in old_station_names
+        if station['name'] not in existing_station_names
     ]
     try:
         altitudes = google.fetch_altitudes(new_stations)
@@ -182,9 +173,8 @@ def updatecity(city):
         return
     srv.insert_stations(city, new_stations, altitudes)
 
-    print(colored("'{}' has been updated, {} insertion(s), {} deletion(s)".format(
-        city.name, len(new_stations), len(stations_to_delete)
-    ), 'green'))
+    print(colored("'{}' has been updated, {} insertion(s),".format(
+        city.name, len(new_stations)), 'green'))
 
 
 @manager.command
