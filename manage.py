@@ -42,8 +42,6 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
     ''' Add a city to the application '''
     import datetime as dt
 
-    import numpy as np
-
     from app import db
     from app import models
     from app import services as srv
@@ -73,8 +71,8 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
         return
 
     # Add the city
-    mean_lat = np.mean([station['latitude'] for station in stations])
-    mean_lon = np.mean([station['longitude'] for station in stations])
+    mean_lat = sum((station['latitude'] for station in stations)) / len(stations)
+    mean_lon = sum((station['longitude'] for station in stations)) / len(stations)
     new_city = models.City(
         active=True,
         country=country,
