@@ -1,4 +1,17 @@
+
+# For more information see the manual pages of crontab(5) and cron(8)
+#
+# m h  dom mon dow   command
+#0 3 * * 4 cd /var/www/OpenBikes && python3 learn.py && sudo chmod 777 -R *
+#* * * * 2,5 sudo supervisorctl restart ob-collect
+#PYTHON=/usr/bin/python3
+
 MAILTO=maxhalford25@gmail.com
+
+## HTTPS Certification for API
+30 2 * * 1 /usr/local/sbin/certbot-auto renew >> /var/log/le-renew.log
+35 2 * * 1 /etc/init.d/nginx reload
+
 # START CRON JOB LIST
 ## Collect biking data every 2 minutes
 */2 * * * * cd /var/www/api.openbikes.co && openbikes/bin/python manage.py collectbikes && curl https://hchk.io/14638a25-5d98-4d10-a06f-46c0b758154d

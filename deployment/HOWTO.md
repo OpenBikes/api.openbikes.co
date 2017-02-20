@@ -71,7 +71,7 @@ exec gunicorn --workers 3 --bind unix:openbikes.sock -m 007 wsgi
 Our Gunicorn application server should now be up and running, waiting for requests on the socket file in the project directory. We need to configure Nginx to pass web requests to that socket by making some small additions to its configuration file.
 
 ```sh
-sudo ln -s /var/www/api.openbikes.co/deployment/ /etc/nginx/sites-available/api.openbikes.co
+sudo ln -s /var/www/api.openbikes.co/deployment/api.openbikes.co /etc/nginx/sites-available/
 ```
 
 `/etc/nginx/sites-available/api.openbikes.co`:
@@ -127,7 +127,7 @@ If this returns without indicating any issues, we can restart the Nginx process 
 
 ```sh
 sudo service nginx restart
-sudo start api.openbikes.co
+sudo start openbikes
 ```
 
 Deployment done.
