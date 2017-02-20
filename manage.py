@@ -2,10 +2,15 @@ from flask_script import Manager, prompt_bool, Shell, Server
 from termcolor import colored
 
 from app import app
-
+from app import util
 
 manager = Manager(app)
 manager.add_command('runserver', Server())
+
+slack = Slacker(
+    webhook=app.config['SLACK_WEBHOOK']
+)
+
 
 def make_shell_context():
     return dict(app=app)
@@ -53,6 +58,10 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
 
     # Check if the city is already in the database
     if models.City.query.filter_by(name=city).count() > 0:
+        slack.send(
+            msg="'{}' has already been added".format(city),
+            channel='#checks'
+        )
         print(colored("'{}' has already been added".format(city), 'cyan'))
         return
 
@@ -60,6 +69,10 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
     try:
         stations = collect(provider, city_api)
     except:
+        slack.send(
+            msg="Couldn't get stations data for '{}'".format(city),
+            channel='#checks'
+        )
         print(colored("Couldn't get stations data for '{}'".format(city), 'red'))
         return
 
@@ -67,6 +80,10 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
     try:
         altitudes = google.fetch_altitudes(stations)
     except:
+        slack.send(
+            msg="Couldn't get altitudes for '{}'".format(city),
+            channel='#checks'
+        )
         print(colored("Couldn't get altitudes for '{}'".format(city), 'red'))
         return
 

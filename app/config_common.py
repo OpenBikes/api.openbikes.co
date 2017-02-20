@@ -44,6 +44,9 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{pwd}@{host}:{port}/{name}'.forma
     name=POSTGRES_DBNAME
 )
 
+# Slack Webhook
+SLACK_WEBHOOK = os.environ.get('SLACK_WEBHOOK')
+
 TIMEZONE = 'Europe/Paris'
 
 # Logger settings

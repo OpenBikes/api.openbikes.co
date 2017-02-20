@@ -1,5 +1,6 @@
 import math
 import re
+import requests
 from string import punctuation
 import time
 from unidecode import unidecode
@@ -76,3 +77,16 @@ def timethisfunc(func):
         t2 = time.time()
         return (t2 - t1), res, func.__name__
     return wrapper
+
+
+class Slacker():
+
+    def __init__(self, webhook=None):
+        self.webhook_url = webhook
+
+    def send(self, msg=None, channel='#general'):
+        payload = {
+            "text": msg,
+            "channel": channel
+        }
+        requests.post(self.webhook_url, json=payload)
