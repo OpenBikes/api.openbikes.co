@@ -68,9 +68,9 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
     # Get the current information for a city
     try:
         stations = collect(provider, city_api)
-    except:
+    except Exception as err:
         slack.send(
-            msg="Couldn't get stations data for '{}'".format(city),
+            msg="Couldn't get stations data for '{}'\nError: \n{err}".format(city, err),
             channel='#checks'
         )
         print(colored("Couldn't get stations data for '{}'".format(city), 'red'))
@@ -79,9 +79,9 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
     # Fetch the altitudes of every station
     try:
         altitudes = google.fetch_altitudes(stations)
-    except:
+    except Exception as err:
         slack.send(
-            msg="Couldn't get altitudes for '{}'".format(city),
+            msg="Couldn't get altitudes for '{}'\nError: \n{err}".format(city, err),
             channel='#checks'
         )
         print(colored("Couldn't get altitudes for '{}'".format(city), 'red'))
