@@ -21,7 +21,7 @@ def stations(city):
 
 
 def normalize(stations):
-    extract = extract_element
+    extract = util.extract_element
     normalized = lambda station: {
         'name': extract(station, 'bm:nom'),
         'address': extract(station, 'bm:nom'),
