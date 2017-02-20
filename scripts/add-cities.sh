@@ -39,6 +39,8 @@ python3 manage.py addcity -f niceride -c Minneapolis -a Minneapolis -o "Minneapo
 #python3 manage.py addcity -f bixi -c Ottawa -a capitale -o "Ottawa, CA" -p Canada -e 0
 #python3 manage.py addcity -f bixi -c Montreal -a montreal -o "Montreal, CA" -p Canada -e 0
 
+python3 manage.py addcity -f lacub -c Bordeaux -a Bordeaux -o "Bordeaux, FR" -p France -e 1
+
 python3 manage.py addcity -f keolis -c Rennes -a Rennes -o "Rennes, FR" -p France -e 1
 
 python3 manage.py addcity -f machikado -c Kyoto -a Kyoto -o "Kyoto, JP" -p Japan -e 1
