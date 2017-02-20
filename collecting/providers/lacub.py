@@ -1,3 +1,4 @@
+import datetime as dt
 import requests
 
 from app import app
@@ -15,25 +16,23 @@ def stations(city):
         'SRSNAME': 'EPSG:4326'
     }
     response = requests.get('http://data.lacub.fr/wfs', params=payload)
-    data = util.load_xml(response.content)
-    return normalize(data)
+    stations = util.load_xml(response.content)
+    return normalize(stations)
 
 
 def normalize(stations):
-    extract = util.extract_element
+    extract = extract_element
     normalized = lambda station: {
-        'name': extract(station, 'name'),
-        'address': extract(station, 'name'),
-        'latitude': float(extract(station, 'lat')),
-        'longitude': float(extract(station, 'long')),
-        'status': 'OPEN' if extract(station, 'locked') == 'false' else 'CLOSED',
-        'bikes': int(extract(station, 'nbbikes')),
-        'stands': int(extract(station, 'nbemptydocks')),
-        'update': util.epoch_to_datetime(int(extract(station,
-                                                     'latestupdatetime')),
-                                         divisor=1000).isoformat()
+        'name': extract(station, 'bm:nom'),
+        'address': extract(station, 'bm:nom'),
+        'latitude': float(extract(station, 'gml:lowercorner').split(' ')[0]),
+        'longitude': float(extract(station, 'gml:lowercorner').split(' ')[1]),
+        'status': 'OPEN' if extract(station, 'bm:etat') == 'CONNECTEE' else 'CLOSED',
+        'bikes': int(extract(station, 'bm:nbvelos')),
+        'stands': int(extract(station, 'bm:nbplaces')),
+        'update': dt.datetime.strptime(extract(station, 'bm:heure'), '%Y-%m-%d %H:%M:%S').isoformat()
     }
     return [
         normalized(station)
-        for station in stations.find_all('station')
+        for station in stations.find_all('gml:featuremember')
     ]
