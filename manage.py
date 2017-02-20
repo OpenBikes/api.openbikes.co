@@ -7,7 +7,7 @@ from app import util
 manager = Manager(app)
 manager.add_command('runserver', Server())
 
-slack = Slacker(
+slack = util.Slacker(
     webhook=app.config['SLACK_WEBHOOK']
 )
 
@@ -58,10 +58,6 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
 
     # Check if the city is already in the database
     if models.City.query.filter_by(name=city).count() > 0:
-        slack.send(
-            msg="'{}' has already been added".format(city),
-            channel='#checks'
-        )
         print(colored("'{}' has already been added".format(city), 'cyan'))
         return
 
@@ -70,7 +66,7 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
         stations = collect(provider, city_api)
     except Exception as err:
         slack.send(
-            msg="Couldn't get stations data for '{}'\nError: \n{err}".format(city, err),
+            msg="Couldn't get stations data for '{}'\nError: \n{}".format(city, err),
             channel='#checks'
         )
         print(colored("Couldn't get stations data for '{}'".format(city), 'red'))
@@ -81,7 +77,7 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
         altitudes = google.fetch_altitudes(stations)
     except Exception as err:
         slack.send(
-            msg="Couldn't get altitudes for '{}'\nError: \n{err}".format(city, err),
+            msg="Couldn't get altitudes for '{}'\nError: \n{}".format(city, err),
             channel='#checks'
         )
         print(colored("Couldn't get altitudes for '{}'".format(city), 'red'))
