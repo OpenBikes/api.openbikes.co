@@ -1,3 +1,5 @@
+import sys
+
 from flask_script import Manager, prompt_bool, Shell, Server
 from termcolor import colored
 
@@ -5,7 +7,7 @@ from app import app
 from app import util
 
 manager = Manager(app)
-manager.add_command('runserver', Server())
+manager.add_command('runserver', Server(port=4000))
 
 slack = util.Slacker(
     webhook=app.config['SLACK_WEBHOOK']
@@ -65,22 +67,26 @@ def addcity(provider, city, city_api, city_owm, country, predictable):
     try:
         stations = collect(provider, city_api)
     except Exception as err:
-        slack.send(
-            msg="Couldn't get stations data for '{}'\nError: \n{}".format(city, err),
-            channel='#checks'
-        )
+        # TODO: use this in production
+        # slack.send(
+        #     msg="Couldn't get stations data for '{}'\nError: \n{}".format(city, err),
+        #     channel='#checks'
+        # )
         print(colored("Couldn't get stations data for '{}'".format(city), 'red'))
+        print(sys.exc_info())
         return
 
     # Fetch the altitudes of every station
     try:
         altitudes = google.fetch_altitudes(stations)
     except Exception as err:
-        slack.send(
-            msg="Couldn't get altitudes for '{}'\nError: \n{}".format(city, err),
-            channel='#checks'
-        )
+        # TODO: use this in production
+        # slack.send(
+        #     msg="Couldn't get altitudes for '{}'\nError: \n{}".format(city, err),
+        #     channel='#checks'
+        # )
         print(colored("Couldn't get altitudes for '{}'".format(city), 'red'))
+        print(sys.exc_info())
         return
 
     # Add the city

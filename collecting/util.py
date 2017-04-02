@@ -40,7 +40,7 @@ def epoch_to_datetime(epoch, divisor=1):
 
 def load_xml(string):
     ''' Convenience wrapper for the BeautifulSoup library. '''
-    return BeautifulSoup(string, 'lxml')
+    return BeautifulSoup(string, 'html.parser')
 
 
 def extract_element(element, child):

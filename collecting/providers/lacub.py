@@ -12,7 +12,7 @@ def stations(city):
         'SERVICE': 'WFS',
         'VERSION': '1.1.0',
         'REQUEST': 'GetFeature',
-        'TYPENAME': 'CI_VCUB_P',
+        'TYPENAME': 'bm:CI_VCUB_P',
         'SRSNAME': 'EPSG:4326'
     }
     response = requests.get('http://data.lacub.fr/wfs', params=payload)
