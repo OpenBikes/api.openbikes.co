@@ -229,7 +229,7 @@ def fetch_docks_updates(city_name: str,
     # Get the city's stations
     stations = {
         station.name: station
-        for station in stations.select_related('docks_update').all()
+        for station in city.stations.select_related('docks_update').all()
     }
 
     # Get the latest updates
@@ -342,7 +342,7 @@ def fetch_weather_update(city_name: str, weather_service: WeatherService) -> boo
     fetched_at = timezone.now()
 
     # Check if weather is new or not
-    if weather.at <= city.weather_update.at:
+    if city.weather_update and weather.at <= city.weather_update.at:
         return False
 
     # Save weather update
