@@ -1,0 +1,25 @@
+{% extends 'core/base.html' %}
+{% load month_name %}
+
+{% block content %}
+<h1 class="title">Archives for {{ city.name }}</h1>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Year</th>
+      <th>Month</th>
+      <th>Size</th>
+      <th>Zipfile</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for archive in archives %}
+    <tr>
+      <td>{{ archive.year }}</td>
+      <td>{{ archive.month|month_name }}</td>
+      <td>{{ archive.size }}</td>
+      <td><a href="/media/{{ archive.file_path }}">Zipfile</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+{% endblock %}

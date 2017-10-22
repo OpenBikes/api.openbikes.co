@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+    <link rel="icon" href="/static/favicon.ico" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.5.2/css/bulma.min.css">
+    <title>OpenBikes</title>
+  </head>
+  <body>
+    <div class="ob-content container">
+      <a href="/">
+        <img src="/static/img/logo.png" class="ob-logo image">
+      </a>
+      <div class="content has-text-centered">
+        {% block content %}
+        {% endblock %}
+      </div>
+    </div>
+  </body>
+</html>
+
+<style lang="css">
+.ob-content {
+  margin-top: 50px;
+}
+
+.ob-logo {
+  display: block;
+  margin: auto;
+}
+</style>
+
+{% block style %}
+{% endblock %}

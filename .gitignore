@@ -1,13 +1,9 @@
-.cache/
+# Should be provided
 .env
-.git/
-*.db
-*.csv
-*.geojson
-*.log
-*.pkl
-*.pyc
+
+# For testing
 *.zip
-config.py
-ngrok
-venv/
+*.db
+
+# General
+*.pyc

@@ -1,0 +1,36 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container">
+  </br>
+  <p>OpenBikes provides free access to both historical and live bike sharing data.</p>
+  </br>
+  <div class="columns">
+    <div class="ob-button-container column">
+      <button class="button ob-button" onclick="location.href='archives';">Access the archives</button>
+    </div>
+    <!-- <div class="ob-button-container column">
+      <button class="button ob-button" onclick="location.href='live';">Access the live API</button>
+    </div> -->
+  </div>
+</div>
+{% endblock %}
+
+{% block style %}
+<style lang="css">
+.ob-button-container {
+  text-align: center;
+}
+
+.ob-button {
+  border-color: #4d5f74;
+  color: #4d5f74;
+}
+
+.ob-button:focus, .ob-button:hover {
+  background: #4d5f74;
+  border-color: #4d5f74;
+  color: white;
+}
+</style>
+{% endblock %}
