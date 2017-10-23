@@ -16,7 +16,6 @@ class Provider(BaseProvider):
         return xmltodict.parse(r.content)['stations']['station']
 
     def parse_raw_update(self, raw_update: dict) -> station_updates.StationUpdate:
-        print(raw_update)
         return station_updates.StationUpdate(
             name=raw_update['name'],
             address=raw_update['name'],
