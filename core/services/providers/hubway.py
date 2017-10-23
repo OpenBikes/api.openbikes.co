@@ -16,13 +16,14 @@ class Provider(BaseProvider):
         return xmltodict.parse(r.content)['stations']['station']
 
     def parse_raw_update(self, raw_update: dict) -> station_updates.StationUpdate:
+        print(raw_update)
         return station_updates.StationUpdate(
             name=raw_update['name'],
             address=raw_update['name'],
-            latitude=raw_update['lat'],
-            longitude=raw_update['long'],
-            n_empty=raw_update['nbEmptyDocks'],
-            n_taken=raw_update['nbBikes'],
+            latitude=float(raw_update['lat']),
+            longitude=float(raw_update['long']),
+            n_empty=int(raw_update['nbEmptyDocks']),
+            n_taken=int(raw_update['nbBikes']),
             is_available=raw_update['locked'] == 'false',
             at=dt.datetime.utcfromtimestamp(int(raw_update['latestUpdateTime']) / 1000)
         )
