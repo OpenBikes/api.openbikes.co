@@ -1,8 +1,5 @@
 #!/bin/bash
 MAILTO=maxhalford25@gmail.com
 
-OPENBIKES=/home/axel/api.openbikes.co
-PYTHON=/home/axel/anaconda3/envs/openbikes/bin/python manage.py
-
-*/2 * * * * cd $OPENBIKES && $PYTHON manage.py fetchdocks ALL
-*/15 * * * * cd $OPENBIKES && $PYTHON manage.py fetchweather ALL
+*/2 * * * * cd /home/axel/api.openbikes.co && /home/axel/anaconda3/envs/openbikes/bin/python manage.py fetchdocks ALL
+*/15 * * * * cd /home/axel/api.openbikes.co && /home/axel/anaconda3/envs/openbikes/bin/python manage.py fetchweather ALL
