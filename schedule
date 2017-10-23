@@ -1,4 +1,5 @@
 #!/bin/bash
+MAILTO=maxhalford25@gmail.com
 
 OPENBIKES=/home/axel/api.openbikes.co
 PYTHON=/home/axel/anaconda3/envs/openbikes/bin/python
