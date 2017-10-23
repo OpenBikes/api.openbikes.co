@@ -1,0 +1,4 @@
+PYTHON=/home/axel/anaconda3/envs/openbikes/bin/python
+
+*/3 * * * * PYTHON manage.py fetchdocks ALL >/dev/null 2>&1
+*/15 * * * * PYTHON manage.py fetchweather ALL >/dev/null 2>&1
