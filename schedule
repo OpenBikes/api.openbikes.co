@@ -3,5 +3,5 @@
 OPENBIKES=/home/axel/api.openbikes.co
 PYTHON=/home/axel/anaconda3/envs/openbikes/bin/python
 
-*/3 * * * * cd OPENBIKES && PYTHON manage.py fetchdocks ALL >/dev/null 2>&1
-*/15 * * * * cd OPENBIKES && PYTHON manage.py fetchweather ALL >/dev/null 2>&1
+*/3 * * * * cd OPENBIKES && PYTHON manage.py fetchdocks ALL
+*/15 * * * * cd OPENBIKES && PYTHON manage.py fetchweather ALL

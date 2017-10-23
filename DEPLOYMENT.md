@@ -11,6 +11,7 @@ CREATE DATABASE openbikes;
 # Clone
 git clone https://github.com/OpenBikes/api.openbikes.co
 cd api.openbikes.co
+chmod 777 -R *
 
 # Virtual environment
 conda create -n openbikes python=3.6
