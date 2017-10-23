@@ -1,3 +1,5 @@
+#!/bin/bash
+
 OPENBIKES=/home/axel/api.openbikes.co
 PYTHON=/home/axel/anaconda3/envs/openbikes/bin/python
 
