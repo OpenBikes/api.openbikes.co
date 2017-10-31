@@ -9,23 +9,21 @@
     <title>OpenBikes</title>
   </head>
   <body>
-    <div class="ob-content container">
-      <a href="/">
-        <img src="/static/img/logo.png" class="ob-logo image">
-      </a>
-      <div class="content has-text-centered">
-        {% block content %}
-        {% endblock %}
+    <section class="section">
+      <div class="container">
+        <a href="/">
+          <img src="/static/img/logo.png" class="ob-logo image">
+        </a>
+        <div class="content has-text-centered">
+          {% block content %}
+          {% endblock %}
+        </div>
       </div>
-    </div>
+    </section>
   </body>
 </html>
 
 <style lang="css">
-.ob-content {
-  margin-top: 50px;
-}
-
 .ob-logo {
   display: block;
   margin: auto;

@@ -18,10 +18,12 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('cities', nargs='+', type=str)
+        parser.add_argument('n_threads', type=int)
 
     def handle(self, *args, **options):
 
         city_names = options['cities']
+        n_threads = options['n_threads']
 
         if city_names[0] == 'ALL':
             city_names = services.get_active_city_names()
@@ -45,7 +47,7 @@ class Command(BaseCommand):
                                       f'added {n_new_stations} new station(s) for city ' + \
                                       f'"{city_name}"')
 
-        pool = futures.ThreadPoolExecutor(len(city_names))
+        pool = futures.ThreadPoolExecutor(n_threads)
         jobs = []
 
         for city_name in city_names:
