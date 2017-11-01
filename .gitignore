@@ -1,6 +1,9 @@
 # Should be provided
 .env
 
+# Logging
+logs/
+
 # For testing
 *.zip
 *.db
