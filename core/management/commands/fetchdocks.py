@@ -43,6 +43,8 @@ class Command(BaseCommand):
                 return self.style.ERROR(f'City "{city_name}" does not exist')
             except services.errors.CityIsDisabled:
                 return self.style.ERROR(f'City "{city_name}" is disabled')
+            except requests.exceptions.HTTPError:
+                return self.style.ERROR(f'Error querying API for city "{city_name}"')
             return self.style.SUCCESS(f'Successfully fetched {n_new_updates} new update(s) and ' + \
                                       f'added {n_new_stations} new station(s) for city ' + \
                                       f'"{city_name}"')
