@@ -14,7 +14,7 @@ JCDECAUX_API_KEY=https://developer.jcdecaux.com/
 KEOLIS_API_KEY=https://data.keolis-rennes.com/fr/accueil.html
 LACUB_API_KEY=http://data.bordeaux-metropole.fr/apicub
 
-APP_SECRET=keep_it_secret_keep_it_safe
+SECRET_KEY=keep_it_secret_keep_it_safe
 
 POSTGRES_NAME=openbikes
 POSTGRES_USER=postgres
