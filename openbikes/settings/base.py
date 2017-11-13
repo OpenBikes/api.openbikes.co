@@ -41,7 +41,7 @@ SECRET_KEY = ENV('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['207.154.202.233']
+ALLOWED_HOSTS = ['207.154.202.233', 'openbik.es']
 
 
 # Application definition
