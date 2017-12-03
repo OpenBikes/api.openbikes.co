@@ -43,4 +43,4 @@ class Command(BaseCommand):
             return self.style.SUCCESS(message)
 
         for city_name in city_names:
-            make_archive(city_name)
+            make_archive(city_name, year, month)
