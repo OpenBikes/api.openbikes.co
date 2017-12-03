@@ -13,15 +13,15 @@ class Command(BaseCommand):
     help = "Archive a month of a city's data"
 
     def add_arguments(self, parser):
+        parser.add_argument('cities', nargs='+', type=str)
         parser.add_argument('year', type=int)
         parser.add_argument('month', type=int)
-        parser.add_argument('cities', nargs='+', type=str)
 
     def handle(self, *args, **options):
 
+        city_names = options['cities']
         year = options['year']
         month = options['month']
-        city_names = options['cities']
 
         if city_names[0] == 'ALL':
             city_names = services.get_active_city_names()
