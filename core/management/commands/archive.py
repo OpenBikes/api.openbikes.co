@@ -23,18 +23,24 @@ class Command(BaseCommand):
         year = options['year']
         month = options['month']
 
-        try:
-            n_bytes = services.make_archive(
-                city_name=city_name,
-                year=year,
-                month=month
-            )
-        except services.errors.CityNotFound:
-            raise CommandError(f'City "{city_name}" does not exist')
-        except services.errors.ArchiveAlreadyExists:
-            message = f'{year}-{month:02d} data has already been archived for city "{city_name}"'
-            raise CommandError(message)
+        if city_names[0] == 'ALL':
+            city_names = services.get_active_city_names()
 
-        message = f'Successfully archived {year}-{month:02d} data for city "{city_name}" ' + \
-                  f'({util.humanize_n_bytes(n_bytes)})'
-        self.stdout.write(self.style.SUCCESS(message))
+        def make_archive(city_name, year, month):
+            try:
+                n_bytes = services.make_archive(
+                    city_name=city_name,
+                    year=year,
+                    month=month
+                )
+            except services.errors.CityNotFound:
+                return self.style.ERROR(f'City "{city_name}" does not exist')
+            except services.errors.ArchiveAlreadyExists:
+                message = f'{year}-{month:02d} data has already been archived for city "{city_name}"'
+                return self.style.ERROR(message)
+            message = f'Successfully archived {year}-{month:02d} data for city "{city_name}" ' + \
+                      f'({util.humanize_n_bytes(n_bytes)})'
+            return self.style.SUCCESS(message)
+
+        for city_name in city_names:
+            make_archive(city_name)
