@@ -8,4 +8,4 @@ MAILTO=maxhalford25@gmail.com
 */15 * * * * cd /var/www/api.openbikes.co && /home/axel/anaconda3/envs/openbikes/bin/python manage.py fetchweather ALL 3
 
 # Make archives every 2 of the month
-0 0 2 * * cd /var/www/api.openbikes.co && /home/axel/anaconda3/envs/openbikes/bin/python manage.py archive ALL $(date -d 'last month' +%Y) $(date -d 'last month' +%Y) $(date -d 'last month' +%m)
+0 0 2 * * cd /var/www/api.openbikes.co && /home/axel/anaconda3/envs/openbikes/bin/python manage.py archive ALL $(date -d 'last month' +%Y) $(date -d 'last month' +%m)
