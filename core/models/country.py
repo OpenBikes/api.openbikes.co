@@ -6,11 +6,12 @@ from .base import BaseModel
 
 class Country(BaseModel):
     name = models.TextField('Name', unique=True)
+    slug = models.TextField('Slug', unique=True)
 
     class Meta:
         db_table = 't_countries'
         verbose_name_plural = 'countries'
 
-    @property
-    def slug(self):
-        return slugify(self.name)
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)

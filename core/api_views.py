@@ -1,19 +1,27 @@
 from django.shortcuts import get_object_or_404
+import django_filters.rest_framework
 from rest_framework import viewsets
-from rest_framework.response import Response
 
 from . import models
 from . import serializers
 
 
-class CityViewSet(viewsets.ViewSet):
+class CityViewSet(viewsets.ModelViewSet):
+    queryset = models.City.objects
+    serializer_class = serializers.CitySerializer
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filter_fields = ('name', 'api_name', 'slug', 'active', 'provider', 'country')
 
-    def list(self, request):
-        queryset = models.City.objects.all()
-        serializer = serializers.CitySerializer(queryset, many=True)
-        return Response(serializer.data)
 
-    def retrieve(self, request, pk=None):
-        city = get_object_or_404(models.City.objects.all(), pk=pk)
-        serializer = serializers.CitySerializer(city)
-        return Response(serializer.data)
+class CountryViewSet(viewsets.ModelViewSet):
+    queryset = models.Country.objects
+    serializer_class = serializers.CountrySerializer
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filter_fields = ('name', 'slug')
+
+
+class ProviderViewSet(viewsets.ModelViewSet):
+    queryset = models.Provider.objects
+    serializer_class = serializers.ProviderSerializer
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filter_fields = ('name', 'slug')

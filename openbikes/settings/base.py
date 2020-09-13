@@ -21,8 +21,8 @@ environ.Env.read_env('.env')
 
 # Read API keys
 JCDECAUX_API_KEY = ENV('JCDECAUX_API_KEY')
-KEOLIS_API_KEY = ENV('KEOLIS_API_KEY')
-LACUB_API_KEY = ENV('LACUB_API_KEY')
+#KEOLIS_API_KEY = ENV('KEOLIS_API_KEY')
+#LACUB_API_KEY = ENV('LACUB_API_KEY')
 
 GOOGLE_ELEVATION_API_KEY = ENV('GOOGLE_ELEVATION_API_KEY')
 GOOGLE_TIME_ZONE_API_KEY = ENV('GOOGLE_TIME_ZONE_API_KEY')
@@ -41,7 +41,7 @@ SECRET_KEY = ENV('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['207.154.202.233', 'openbik.es']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core',
     'rest_framework',
-    'rest_framework_swagger'
+    'rest_framework_swagger',
+    'django_filters'
 ]
 
 MIDDLEWARE = [
@@ -96,14 +97,15 @@ WSGI_APPLICATION = 'openbikes.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': ENV('POSTGRES_NAME'),
-        'USER': ENV('POSTGRES_USER'),
-        'PASSWORD': ENV('POSTGRES_PASSWORD'),
-        'HOST': ENV('POSTGRES_HOST'),
-        'PORT': ENV('POSTGRES_PORT'),
-    },
+        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'sqlite3.db',                      # Or path to database file if using sqlite3.
+        'USER': '',                      # Not used with sqlite3.
+        'PASSWORD': '',                  # Not used with sqlite3.
+        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+    }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators

@@ -1,6 +1,7 @@
 import csv
 import datetime as dt
 import io
+import json
 import os
 import zipfile
 
@@ -105,7 +106,7 @@ def add_city(city_name: str,
     # Save stations
     for station in stations:
         station.city = city
-    models.Station.objects.bulk_create(stations)
+        station.save()
 
     # Save docks updates
     docks_updates = [
@@ -118,15 +119,15 @@ def add_city(city_name: str,
         )
         for su, station in zip(station_updates, stations)
     ]
-    models.DocksUpdate.objects.bulk_create(docks_updates)
 
     # Add docks updates to stations
     for station, docks_update in zip(stations, docks_updates):
+        docks_update.save()
         station.docks_update = docks_update
         station.save()
 
     # Add geojson to city
-    city._geojson = geojson.convert_stations_to_geojson(stations)
+    city._geojson = json.dumps(geojson.convert_stations_to_geojson(stations))
     city.save()
 
     # Add weather to city
@@ -308,7 +309,7 @@ def fetch_docks_updates(city_name: str,
 
     # Update city geojson if there has been any new updates or any new stations
     if n_new_updates > 0 or n_new_stations > 0  or n_availability_changes > 0:
-        city._geojson = geojson.convert_stations_to_geojson(stations.values())
+        city._geojson = json.dumps(geojson.convert_stations_to_geojson(stations.values()))
         city.save()
 
     return n_new_updates, n_new_stations

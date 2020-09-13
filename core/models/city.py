@@ -11,6 +11,7 @@ from .weather_update import WeatherUpdate
 
 class City(BaseModel):
     name = models.TextField('Name', unique=True)
+    slug = models.TextField('Slug', unique=True)
     api_name = models.TextField('API name', null=True)
     active = models.BooleanField(default=True)
     time_zone = models.TextField('Time zone')
@@ -26,9 +27,9 @@ class City(BaseModel):
         verbose_name_plural = 'cities'
 
     @property
-    def slug(self):
-        return slugify(self.name)
-
-    @property
     def geojson(self):
         return json.loads(self._geojson)
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)

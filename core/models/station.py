@@ -8,6 +8,7 @@ from .docks_update import DocksUpdate
 
 class Station(BaseModel):
     name = models.TextField('Name')
+    slug = models.TextField('Slug')
     latitude = models.FloatField()
     longitude = models.FloatField()
     altitude = models.FloatField()
@@ -21,6 +22,6 @@ class Station(BaseModel):
         db_table = 't_stations'
         verbose_name_plural = 'stations'
 
-    @property
-    def slug(self):
-        return slugify(self.name)
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)

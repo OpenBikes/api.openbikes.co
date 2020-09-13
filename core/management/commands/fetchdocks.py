@@ -3,8 +3,8 @@ import logging
 
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
+import requests
 
-from core import models
 from core import services
 from core.services import altitude
 from core.services import station_updates
